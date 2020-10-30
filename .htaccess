@@ -1,0 +1,11 @@
+#configurando archivo .htaccess para url's amigables
+#vamos a impedir que se vea el listado de contenidos del directorio 
+#(ocultado las carpetas del proyecto)
+Options All -Indexes
+
+#habilatamos una regla de reescritura
+RewriteEngine On
+
+#las reglas que se colocan en es .htaccess se expresan por medio de una Expresión Regular
+#dentro de los caracteres se escriben que caracteres se permiten en la URL
+RewriteRule ^([-a-zA-Z0-9_]+)$ index.php?ruta=$1
