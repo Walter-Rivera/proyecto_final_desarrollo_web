@@ -703,3 +703,51 @@ BEGIN
 
 
 
+/*PROCEDIMIENTO ALMACENAOD PARA DAR DE BAJA A UN USUARIO DEL SISTEMA*/
+DROP PROCEDURE  IF EXISTS PA_BAJA_USR_SISTEMA;
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_BAJA_USR_SISTEMA`(IN NIP_FIJO INT,IN NIP_USR_RESP INT)
+BEGIN
+    /*Variable para determinar si el usuario que quiere hacer el UPDATE 
+    existe en la bd, y tiene rol de administrador*/
+    DECLARE VALIDAR_ROL INT;
+    /*Variable para recuperar el id del estado "baja"*/
+    DECLARE ID_ESTADO_BAJA INT;
+    /*excepción para hacer rolLback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, sino
+    en alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20011' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de BAJA DEL USUARIO";
+    END;
+
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR OTRO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_USR_RESP));
+        IF(@PRIVILEGIOS=1) THEN
+            /*RECUPERO EL ID DEL ESTADO "BAJA" CON UNA FUNCIÓN*/
+            SET ID_ESTADO_BAJA=(SELECT FUNCT_DEVOLVER_ESTADO_USR_BAJA());
+            /*valido si existe el usuario responsable de la gestión,
+            SI existe y tiene rol de admin y está activo, devuelve 1, sino 0*/
+            SET VALIDAR_ROL=(SELECT FUNCT_EXISTE_USR_ADMIN (NIP_USR_RESP));
+            IF(VALIDAR_ROL=1) THEN
+                UPDATE USUARIO_SISTEMA SET ID_ESTADO_USR=ID_ESTADO_BAJA WHERE ID_USUARIO=NIP_FIJO;
+                UPDATE USUARIO_SISTEMA SET ULTIMO_USUARIO_MODIFICADOR=NIP_USR_RESP WHERE ID_USUARIO=NIP_FIJO;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20012' SET MESSAGE_TEXT = "El usuario no tiene privilegios, o no existe
+                en la base de datos o está inactivo";
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20013' SET MESSAGE_TEXT="¡Usted no tiene privilegios para realizar esta acción!";
+        END IF;
+    END// DELIMITER;
+
+/**/ 
+/*CALL PA_BAJA_USR_SISTEMA(1754,1751);*/
+
+
+
