@@ -559,6 +559,97 @@ END;
 /*call PA_CREAR_USUARIO_SISTEMA(1756,'JUANITO','PEREZ','AUXILIAR_ADMINISTRATIVO','ELLA NO ME AMA :v jajaj ',1751);*/
 
 
+/*procedimiento almacenado para la actualización de datos de un usuario*/
+DROP PROCEDURE IF EXISTS PA_ACTUALIZAR_USUARIO_SISTEMA; 
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZAR_USUARIO_SISTEMA`(IN NIP_FIJO INT, IN NOMBRES_USR_EDITAR VARCHAR(100),
+IN APELLIDOS_USR_EDITAR VARCHAR(100),IN NOMBRE_ROL_USUARIO_EDITAR VARCHAR(100),IN CONTRASENIA_USR_EDITAR VARCHAR(100),IN NIP_ULT_USR_MOD INT)
+BEGIN
+    /*variables para capturar los datos recuperados de la bd del usuario
+    a través de un cursor*/
+    DECLARE C_NIP INT(10);
+    DECLARE C_NOMBRES VARCHAR(200);
+    DECLARE C_APELLIDOS VARCHAR(200);
+    DECLARE C_ID_ROL_USUARIO INT(3);
+    DECLARE C_ACCESO VARCHAR(200);
+    DECLARE C_NIP_ULT_USR_MODIFICADOR INT(10);
+    /*variable para cerrar el loop*/
+    DECLARE FIN_LOOP INTEGER DEFAULT 0;
+    /*creo un cursor para recuperar los datos del usuario a actualizar (datos)*/
+    DECLARE CURSOR_SELECCION_USUARIO CURSOR FOR
+    SELECT ID_USUARIO,NOMBRES,APELLIDOS,ID_ROL,ACCESO,ULTIMO_USUARIO_MODIFICADOR
+    FROM USUARIO_SISTEMA WHERE ID_USUARIO=NIP_FIJO;
+
+    /*VARIABLE PARA CONTROLAR EL FINAL DE RECORRIDO DEL CURSOR*/
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIN_LOOP=1; 
+    /*excepción para hacer rolback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, SINO
+    EN alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20006' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de actualización de usuario";
+    END;
+
+    START TRANSACTION;
+
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR OTRO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            /*EVALUAMOS QUE EL ROL EXISTE EN LA BD*/
+            SET @NROL_USUARIO=(SELECT ID_ROL FROM ROL_USUARIO 
+            WHERE DESCRIPCION=NOMBRE_ROL_USUARIO_EDITAR LIMIT 1);
+            /*SI EL ID DE ROL DE USUARIO SE ENCUENTRA DENTRO DE LOS PERMITIDOS*/ 
+            IF(@NROL_USUARIO IN(4,5,6)) THEN
+                /*abrimos el cursor*/
+                OPEN CURSOR_SELECCION_USUARIO;
+                    CICLO: LOOP
+                    FETCH CURSOR_SELECCION_USUARIO INTO C_NIP,C_NOMBRES, C_APELLIDOS,
+                    C_ID_ROL_USUARIO,C_ACCESO, C_NIP_ULT_USR_MODIFICADOR;
+                        /*comprobamos si llegamos al final de los registros obtenidos del cursor*/
+                        IF FIN_LOOP = 1 THEN
+                            LEAVE CICLO;
+                        END IF;
+                        /*HARÉ VALIDACIÓN DE CAMPO POR CAMPO PARA IDENTIFICAR SI VARIA EL VALOR ANTIGUO
+                        DE CADA UNO CON EL NUEVO ENVIADO POR EL USUARIO DESDE LA VISTA*/
+                        /*SI SE ACTUALIZA EL NOMBRE DEL USUARIO*/
+                        IF(NOMBRES_USR_EDITAR<>C_NOMBRES) THEN
+                            UPDATE USUARIO_SISTEMA SET NOMBRES=NOMBRES_USR_EDITAR WHERE ID_USUARIO=NIP_FIJO;
+                        END IF;
+                        /*SI LOS APELLIDOS O APELLIDO SON O ES ACTUALIZADO*/
+                        IF(APELLIDOS_USR_EDITAR<>C_APELLIDOS) THEN
+                            UPDATE USUARIO_SISTEMA SET APELLIDOS=APELLIDOS_USR_EDITAR WHERE ID_USUARIO=NIP_FIJO;
+                        END IF;
+                        /*SI EL ROL ES ALTERADO*/
+                        IF(C_ID_ROL_USUARIO<>@NROL_USUARIO) THEN
+                            UPDATE USUARIO_SISTEMA SET  ID_ROL=@NROL_USUARIO WHERE ID_USUARIO=NIP_FIJO;
+                        END IF;
+                        /*SI LA CONTRASEÑA ES CAMBIADA*/
+                        IF(C_ACCESO<>CONTRASENIA_USR_EDITAR) THEN
+                            UPDATE USUARIO_SISTEMA SET ACCESO=CONTRASENIA_USR_EDITAR WHERE ID_USUARIO=NIP_FIJO;
+                        END IF;
+                        /*DEBEMOS REGISTAR QUE USUARIO CON PRIVILEGIOS DE ADMIN 
+                        FUE EL ÚLITMO EN EDITAR A OTRO USUARIO*/
+                        IF(C_NIP_ULT_USR_MODIFICADOR<>NIP_ULT_USR_MOD) THEN
+                            UPDATE USUARIO_SISTEMA SET ULTIMO_USUARIO_MODIFICADOR=C_NIP_ULT_USR_MODIFICADOR
+                            WHERE ID_USUARIO=NIP_FIJO;
+                        END IF;         
+                    END LOOP CICLO;
+                CLOSE CURSOR_SELECCION_USUARIO;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20007' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+            ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20008' SET MESSAGE_TEXT = '¡USTED NO TIENE PRIVILEGIOS PARA RELIZAR ESTAS ACCIONES!';
+        END IF;    
+END;
+DELIMITER //
+
+/*CALL PA_ACTUALIZAR_USUARIO_SISTEMA(1754,'PEDRO','APOSTOL','JEFATURA','DOS MIL VEINTIDÓS',1751);*/
+
 
 
 
