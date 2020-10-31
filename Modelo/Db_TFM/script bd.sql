@@ -513,6 +513,24 @@ END// DELIMITER;
 
 
 
+/*FUNCION PARA DEVOLVER EL ID DEL TIPO DE "ESTADO BAJA"*/
+DROP FUNCTION IF EXISTS FUNCT_DEVOLVER_ESTADO_USR_BAJA;
+DELIMITER //
+CREATE FUNCTION FUNCT_DEVOLVER_ESTADO_USR_BAJA() RETURNS INT(03)
+BEGIN
+    DECLARE ID_ESTADO_BAJA INT;
+    SET ID_ESTADO_BAJA=(SELECT ID_ESTADO_USR FROM ESTADO_USUARIO WHERE NOMBRE="BAJA");
+
+    IF(ID_ESTADO_BAJA!='') THEN
+        RETURN ID_ESTADO_BAJA;
+    ELSE
+        SIGNAL SQLSTATE '20014' SET MESSAGE_TEXT = "ERROR AL BUSCAR EL ESTADO DE USUARIO, CONTACTE AL DBA";
+    END IF;
+END// DELIMITER;
+
+
+
+
 /***********************************************************************************************************/
                                         /*PROCEDIMIENTOS ALMACENADOS CRUD USUARIO*/
 /***********************************************************************************************************/
@@ -683,5 +701,5 @@ BEGIN
 
    /* CALL PA_ACTUALIZACION_ESTADO_USR(1754,5,1751);*/
 
-   
+
 
