@@ -365,11 +365,11 @@ INSERT INTO ESTADO_USUARIO(NOMBRE)VALUES('BAJA');
 
 /*ROL USUARIO:EXISTIRÀN LOS SIGUIENTES:
 
-1.- ADMIN. DEL SISTEMA (CLAVE)
+1.- ADMIN. DEL SISTEMA 
 2.-JEFATURA
 3.-Auxiliar Administrativo*/
 
-insert into rol_usuario(DESCRIPCION) values('CLAVE');
+insert into rol_usuario(DESCRIPCION) values('ADMINISTRADOR');
 insert into rol_usuario(DESCRIPCION) values('JEFATURA');
 insert into rol_usuario(DESCRIPCION) values('AUXILIAR_ADMINISTRATIVO');
 
@@ -444,14 +444,30 @@ INNER JOIN ROL_USUARIO R
 ON US.ID_ROL=R.ID_ROL WHERE EU.NOMBRE<>'BAJA');
 
 
+/***********************************************************************************************************/
+                                        /*FUNCIONES CRUD USUARIO*/
+/***********************************************************************************************************/
 
 
+/*FUNCION PARA SABER  el rol de un usuario en específico*/
+DROP FUNCTION IF EXISTS FUNCT_NOMBRE_ROL_USUARIO;
+DELIMITER //
+CREATE FUNCTION FUNCT_NOMBRE_ROL_USUARIO(NIP_URS INT) RETURNS VARCHAR(100)
+BEGIN
+    DECLARE DESCRIPCION_ROL VARCHAR(100);
+    /*Valido que el usuario exista, y esté activo*/
+    SET DESCRIPCION_ROL=(SELECT RU.DESCRIPCION FROM ROL_USUARIO RU
+    INNER JOIN USUARIO_SISTEMA US ON 
+    RU.ID_ROL = US.ID_ROL
+    WHERE US.ID_USUARIO=NIP_URS AND  US.ID_ESTADO_USR=4);
 
-
-
-
-
-
+    IF(DESCRIPCION_ROL!='') THEN
+        RETURN DESCRIPCION_ROL;
+    ELSE
+        SIGNAL SQLSTATE '20005' SET MESSAGE_TEXT = "EL ROL O USUARIO 
+        NO EXISTEN EN EL SISTEMA";
+    END IF;
+END// DELIMITER;
 
 
 
