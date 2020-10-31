@@ -154,7 +154,7 @@ CREATE TABLE USUARIO_SISTEMA
     APELLIDOS VARCHAR(100),
     ID_ESTADO_USR INT(3),
     ID_ROL INT(3),
-    ACCESSO VARCHAR(200),
+    ACCESO VARCHAR(200),
     ULTIMO_LOGIN TIMESTAMP,
     ULTIMO_USUARIO_MODIFICADOR INT(6)
 );
@@ -423,11 +423,25 @@ INSERT INTO TIPO_GESTION(NOMBRE,ID_CLASE_GESTION) VALUES('SG(ASISTENCIAS_JUDICIA
 
 
 
+/***********************************************************************************************************/
+                                        /*LÓGICA DEL NEGOCIO*/
+/***********************************************************************************************************/
+/*CRUD USUASARIO : (CREACION, ACTUALIZACION Y BAJA DE USUARIOS EN EL SISTEMA*/
+/***********************************************************************************************************/
+                                        /*VISTAS CRUD USUARIO*/
+/***********************************************************************************************************/
 
-
-
-
-
+/*LA VISTA  NOS PERMITIRÀ MOSTRAR ÚNICAMENTE LOS DATOS 
+DE LA TABLA USUARIO PARA NO USAR DE FORMA DIRECTA LA TABLA Y NO VULNERAR ESTA*/
+DROP VIEW IF EXISTS VISTA_CRUD_USUARIO;
+CREATE VIEW VISTA_CRUD_USUARIO(NIP,NOMBRES,APELLIDOS,ESTADO_USUARIO,ROL,ACCESO,ULTIMO_LOGIN)
+AS
+(SELECT US.ID_USUARIO,US.NOMBRES,US.APELLIDOS,EU.NOMBRE,R.DESCRIPCION,US.ACCESO,US.ULTIMO_LOGIN 
+FROM USUARIO_SISTEMA US
+INNER JOIN ESTADO_USUARIO EU
+ON US.ID_ESTADO_USR=EU.ID_ESTADO_USR
+INNER JOIN ROL_USUARIO R
+ON US.ID_ROL=R.ID_ROL WHERE EU.NOMBRE<>'BAJA');
 
 
 
