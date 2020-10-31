@@ -513,5 +513,53 @@ END// DELIMITER;
 
 
 
+/***********************************************************************************************************/
+                                        /*PROCEDIMIENTOS ALMACENADOS CRUD USUARIO*/
+/***********************************************************************************************************/
+/*Procedimiento almacenado para la creación de Un usuario del sistema,*/
+DROP PROCEDURE IF EXISTS PA_CREAR_USUARIO_SISTEMA;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_CREAR_USUARIO_SISTEMA`(IN NIP_NUEVO INT, IN NOMBRES_USR_NUEVO VARCHAR(200),IN APELLIDOS_USR_NUEVO VARCHAR(100),IN NOMBRE_ROL_USUARIO_NUEVO VARCHAR(100),IN CONTRASENIA_USR_NUEVO VARCHAR(100),IN NIP_ULT_USR_MOD INT)
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20001' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de creación de usuario";
+    END;
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR OTRO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            /*VERIFICAMOS SI EL USUARIO EXISTE EN EL SISTEMA*/
+            SET @EXISTE_USUARIO = (SELECT FUNCT_EXISTE_USUARIO_SISTEMA(NIP_NUEVO));
+            IF(@EXISTE_USUARIO=0) THEN
+                /*EVALUAMOS QUE EL ROL EXISTE EN LA BD Y EXTRAEMOS EL ID DE ESTE*/
+                SET @NROL_USUARIO=(SELECT ID_ROL FROM ROL_USUARIO 
+                WHERE DESCRIPCION=NOMBRE_ROL_USUARIO_NUEVO LIMIT 1);
+                /*SI NO NOS DEVUELVE NULL ó 0*/ 
+                IF(@NROL_USUARIO IN(4,5,6)) THEN
+                    INSERT INTO USUARIO_SISTEMA
+                    (ID_USUARIO,NOMBRES,APELLIDOS,ID_ESTADO_USR,ID_ROL,ACCESO,ULTIMO_LOGIN,ULTIMO_USUARIO_MODIFICADOR)
+                    VALUES
+                    (NIP_NUEVO,NOMBRES_USR_NUEVO,APELLIDOS_USR_NUEVO,4,@NROL_USUARIO,CONTRASENIA_USR_NUEVO,NOW(),NIP_ULT_USR_MOD);
+                ELSE
+                SIGNAL SQLSTATE '20002' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+                END IF;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20003' SET MESSAGE_TEXT = 'El usuario ya existe, sino lo observa en la tabla, comuníquese con el desarrollador';
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20004' SET MESSAGE_TEXT='¡Usted no tiene privilegios de Administrador!';
+            ROLLBACK;
+        END IF;
+END;
+
+/*call PA_CREAR_USUARIO_SISTEMA(1756,'JUANITO','PEREZ','AUXILIAR_ADMINISTRATIVO','ELLA NO ME AMA :v jajaj ',1751);*/
+
+
+
+
 
 
