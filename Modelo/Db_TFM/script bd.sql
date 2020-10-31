@@ -470,6 +470,30 @@ BEGIN
 END// DELIMITER;
 
 
+/*funcion para validar que existe el usuario que pretende modificar el estado de otro,
+,si existe, devuelve 1 y sino 0, además que tenga privilegios de administrador*/
+DROP FUNCTION  IF EXISTS FUNCT_EXISTE_USR_ADMIN;
+DELIMITER //
+CREATE FUNCTION FUNCT_EXISTE_USR_ADMIN(NIP_RESP INT) RETURNS INT
+    BEGIN 
+        /*Variable en la cual vamos a devolver el resultado de un count
+        que realizaré para validar si un usuario existe en la bd y está activo*/
+        DECLARE CONTAR_RESULTADO INT;
+        /*Variable para capturar el rol de un usuario*/
+        DECLARE ROL_USR_RESP VARCHAR(100);
+        /*verifico si el usuario que quiere modificar el estado de otro,
+        existe en la bd*/
+        SET CONTAR_RESULTADO=(SELECT COUNT(*) FROM USUARIO_SISTEMA WHERE ID_USUARIO=NIP_RESP AND ID_ESTADO_USR<>6 AND ID_ESTADO_USR<>5);
+        /*Valido que el usuario tenga rol de admin*/
+        SET ROL_USR_RESP=(SELECT FUNCT_NOMBRE_ROL_USUARIO(NIP_RESP));
+        /*realizo una condicional para validar que el usuario exista en la bd y tenga
+        rol de usuario para hacer el proceso*/
+        IF(CONTAR_RESULTADO=1 AND ROL_USR_RESP="ADMINISTRADOR") THEN
+            RETURN 1;
+        ELSE
+            RETURN 0;
+        END IF;  
+END// DELIMITER;
 
 
 
