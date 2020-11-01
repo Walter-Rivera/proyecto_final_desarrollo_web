@@ -79,7 +79,6 @@ $(".VtUsuarios tbody").on("click","button.botonEditarUsuario",function()
            document.querySelector('#nipEditar').value=contenido["NIP"];
            document.querySelector('#nombreEditar').value=contenido["NOMBRES"];
            document.querySelector('#apellidoEditar').value=contenido["APELLIDOS"];
-           document.querySelector('#correoEditar').value=contenido["CORREO_INSTITUCIONAL"];
            document.querySelector('#optEditarRol').value=contenido["ROL"];
            document.querySelector('#optEditarRol').innerHTML=contenido["ROL"];
            document.querySelector('#contraActual').value=contenido["ACCESO"];
@@ -157,7 +156,7 @@ $(".VtUsuarios tbody").on("click","button.botonActivar",function(){
         $(this).removeClass('btn-success');
         $(this).addClass('btn-danger');
         $(this).html('Inactivo');
-        $(this).attr('estadoUsr',2);
+        $(this).attr('estadoUsr',5);
         console.log(estadoUsr+"rojo");
     }
     else
@@ -166,7 +165,7 @@ $(".VtUsuarios tbody").on("click","button.botonActivar",function(){
         $(this).addClass('btn-success');
         $(this).removeClass('btn-danger');
         $(this).html('Activo');
-        $(this).attr('estadoUsr',1);   
+        $(this).attr('estadoUsr',4);   
     }
 });
 
@@ -199,3 +198,85 @@ var id_Usuario_baja=$(this).attr("nipBorrarUsuario");
             }
         })
     });
+
+/*
+$.ajax({
+    url: "Ajax/listadoRoles.ajax.php",
+    success:(ans)=>{
+        console.log("respuesta", ans);
+    }
+});
+*/
+
+var opcionRol= document.querySelector('#rolNuevo');
+opcionRol.addEventListener("click",function alternativa(ev){
+    $.ajax({
+        url:"Ajax/listadoRoles.ajax.php",
+        method: "POST",
+        cache: false,
+        contentType: false,
+        processData: false,
+        dataType: "json",
+        success: function(ans){
+          for (let i in ans) {
+            for (let j in ans[i]) {
+                var tagnuevo=document.createElement("option");
+                tagnuevo.value=ans[i][j];
+                tagnuevo.innerHTML=ans[i][j];
+                opcionRol.append(tagnuevo);
+                //console.log(ans[i][j]);
+            }
+          }
+        },
+        error: function(xhr,status){
+            swal.fire({
+                type:"error",
+                icon: "error",
+                title: "¡error!",
+                showConfirmButton: false,
+                timer: 2000
+            }).then((result)=>{
+                    window.location="usuario";
+            });
+        }});
+    /*este evento solo se ejecutará cuando se de una vez click */    
+    ev.target.removeEventListener(ev.type, alternativa);
+});
+
+
+
+
+var opcionRolEditar= document.querySelector('#rolEditar');
+opcionRolEditar.addEventListener("click",function alternativa(ev){
+    $.ajax({
+        url:"Ajax/listadoRoles.ajax.php",
+        method: "POST",
+        cache: false,
+        contentType: false,
+        processData: false,
+        dataType: "json",
+        success: function(ans){
+          for (let i in ans) {
+            for (let j in ans[i]) {
+                var tagnuevo=document.createElement("option");
+                tagnuevo.value=ans[i][j];
+                tagnuevo.innerHTML=ans[i][j];
+                opcionRolEditar.append(tagnuevo);
+                //console.log(ans[i][j]);
+            }
+          }
+        },
+        error: function(xhr,status){
+            swal.fire({
+                type:"error",
+                icon: "error",
+                title: "¡error!",
+                showConfirmButton: false,
+                timer: 2000
+            }).then((result)=>{
+                    window.location="usuario";
+            });
+        }});
+    /*este evento solo se ejecutará cuando se de una vez click */    
+    ev.target.removeEventListener(ev.type, alternativa);
+});

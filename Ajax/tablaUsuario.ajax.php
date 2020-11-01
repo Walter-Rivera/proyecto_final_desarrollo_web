@@ -17,26 +17,25 @@ class VistaUsuario{
             for($n=0;$n<count($res);$n++)
             {
                 /*estado_boton*/
-                $btnActivo="<td><button class='btn btn-success btn-xs botonActivar' NIPusr='".$res[$n]["NIP"]."' RESPON='".$_SESSION["NIP"]."' estadoUsr='1'>Activo</button></td>";
-                $btnInactivo="<td><button class='btn btn-danger btn-xs botonActivar' NIPusr='".$res[$n]["NIP"]."' RESPON='".$_SESSION["NIP"]."' estadoUsr='2'>Inactivo</button></td>";
+                $btnActivo="<td><button class='btn btn-success btn-xs botonActivar' NIPusr='".$res[$n]["NIP"]."' RESPON='".$_SESSION["NIP"]."' estadoUsr='4'>Activo</button></td>";
+                $btnInactivo="<td><button class='btn btn-danger btn-xs botonActivar' NIPusr='".$res[$n]["NIP"]."' RESPON='".$_SESSION["NIP"]."' estadoUsr='5'>Inactivo</button></td>";
                 $botonesAcciones="<div class='btn-group'><button class='btn btn-warning botonEditarUsuario' nipEditarUsuario='".$res[$n]["NIP"]."' data-toggle='modal' data-target='#opcEditarUsuario'><i class='fa fa-pencil'></i></button><button class='btn btn-danger botonEliminarUsuario' nipBorrarUsuario='".$res[$n]["NIP"]."' RESPON='".$_SESSION["NIP"]."'><i class='fa fa-exclamation-circle'></i></button></div>";
 
                 $datosUsuario.= '[
                     "'.$res[$n]["NIP"].'",
                     "'.$res[$n]["NOMBRES"].'",
-                    "'.$res[$n]["APELLIDOS"].'",
-                    "'.$res[$n]["CORREO_INSTITUCIONAL"].'",';
-                    if($res[$n]["ESTADO_USUARIOS"]=="ACTIVO"){
+                    "'.$res[$n]["APELLIDOS"].'",';
+                    if($res[$n]["ESTADO_USUARIO"]=="ACTIVO"){
                         $datosUsuario.= '"'.$btnActivo.'",';
                     }
-                    else if($res[$n]["ESTADO_USUARIOS"]=="INACTIVO")
+                    else if($res[$n]["ESTADO_USUARIO"]=="INACTIVO")
                     {
                         $datosUsuario.= '"'.$btnInactivo.'",';
 
                     }
                 $datosUsuario.= '"'.$res[$n]["ROL"].'",
                     "'.$res[$n]["ACCESO"].'",
-                    "'.$res[$n]["FECHA_ULTIMO_ACCESO"].'",
+                    "'.$res[$n]["ULTIMO_LOGIN"].'",
                     "'.$botonesAcciones.'"
                 ],'; 
             }

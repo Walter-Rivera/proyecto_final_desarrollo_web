@@ -79,15 +79,14 @@ require_once "permiso.php";
                 
                 /*Hago uso de sentencias preparadas para evitar
                 ataques de SQLInyection*/
-                $query="CALL PA_CREAR_USUARIO_SISTEMA(?,?,?,?,?,?,?)";
+                $query="CALL PA_CREAR_USUARIO_SISTEMA(?,?,?,?,?,?)";
                 $INSERCIONUSUARIO=Permiso::acceder()->prepare($query);
                 $INSERCIONUSUARIO->bindParam(1,$nuevaTupla["NIP"],PDO::PARAM_INT);
                 $INSERCIONUSUARIO->bindParam(2,$nuevaTupla["NOMBRES"],PDO::PARAM_STR);
                 $INSERCIONUSUARIO->bindParam(3,$nuevaTupla["APELLIDOS"],PDO::PARAM_STR);
-                $INSERCIONUSUARIO->bindParam(4,$nuevaTupla["CORREO_INSTITUCIONAL"],PDO::PARAM_STR);
-                $INSERCIONUSUARIO->bindParam(5,$nuevaTupla["ID_ROL_USUARIO"],PDO::PARAM_STR);
-                $INSERCIONUSUARIO->bindParam(6,$nuevaTupla["ACCESO"],PDO::PARAM_STR);
-                $INSERCIONUSUARIO->bindParam(7,$nuevaTupla["NIP_ULT_USR_MODIFICADOR"],PDO::PARAM_INT);
+                $INSERCIONUSUARIO->bindParam(4,$nuevaTupla["ID_ROL_USUARIO"],PDO::PARAM_STR);
+                $INSERCIONUSUARIO->bindParam(5,$nuevaTupla["ACCESO"],PDO::PARAM_STR);
+                $INSERCIONUSUARIO->bindParam(6,$nuevaTupla["NIP_ULT_USR_MODIFICADOR"],PDO::PARAM_INT);
                /* print "Values of bound parameters _before_ CALL:\n";
                 print "  1: {$nuevaTupla["NIP"]} 2: {$nuevaTupla["NOMBRES"]}\n"; 
                 print "  3: {$nuevaTupla["APELLIDOS"]} 4: {$nuevaTupla["CORREO_INSTITUCIONAL"]}\n";
@@ -127,15 +126,14 @@ require_once "permiso.php";
                 
                 /*Hago uso de sentencias preparadas para evitar
                 ataques de SQLInyection*/
-                $query="CALL PA_ACTUALIZAR_USUARIO_SISTEMA(?,?,?,?,?,?,?)";
+                $query="CALL PA_ACTUALIZAR_USUARIO_SISTEMA(?,?,?,?,?,?)";
                 $ACTUALIZACIONUSUARIO=Permiso::acceder()->prepare($query);
                 $ACTUALIZACIONUSUARIO->bindParam(1,$nuevaTupla["NIP"],PDO::PARAM_INT);
                 $ACTUALIZACIONUSUARIO->bindParam(2,$nuevaTupla["NOMBRES"],PDO::PARAM_STR);
                 $ACTUALIZACIONUSUARIO->bindParam(3,$nuevaTupla["APELLIDOS"],PDO::PARAM_STR);
-                $ACTUALIZACIONUSUARIO->bindParam(4,$nuevaTupla["CORREO_INSTITUCIONAL"],PDO::PARAM_STR);
-                $ACTUALIZACIONUSUARIO->bindParam(5,$nuevaTupla["ID_ROL_USUARIO"],PDO::PARAM_STR);
-                $ACTUALIZACIONUSUARIO->bindParam(6,$nuevaTupla["ACCESO"],PDO::PARAM_STR);
-                $ACTUALIZACIONUSUARIO->bindParam(7,$nuevaTupla["NIP_ULT_USR_MODIFICADOR"],PDO::PARAM_INT);
+                $ACTUALIZACIONUSUARIO->bindParam(4,$nuevaTupla["ID_ROL_USUARIO"],PDO::PARAM_STR);
+                $ACTUALIZACIONUSUARIO->bindParam(5,$nuevaTupla["ACCESO"],PDO::PARAM_STR);
+                $ACTUALIZACIONUSUARIO->bindParam(6,$nuevaTupla["NIP_ULT_USR_MODIFICADOR"],PDO::PARAM_INT);
 
                 
                 /*si la consulta se ejecuta correctamente vamos 
@@ -296,4 +294,24 @@ require_once "permiso.php";
                 </script>';
             }
         }
+
+        static public function mdlObtenerDatos()
+        {
+            try
+            {
+                /*QUERY*/
+                $query = "SELECT DESCRIPCION FROM VISTA_DATOS";
+                $ans=Permiso::acceder()->prepare($query);
+                $ans->execute();
+                return $ans->fetchAll();
+                $ans->close();
+                $ans=null;
+
+            }
+            catch(PDOException $ex)
+            {
+                return $Ex->getMessage();
+            }
+        }
     }
+

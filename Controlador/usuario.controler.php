@@ -44,7 +44,7 @@ class ContrlUsuario
                     { 
                        
                         /*validamos que el usuario esté activo para poder iniciar sesión */
-                        if($respuesta["ESTADO_USUARIOS"]=="ACTIVO")
+                        if($respuesta["ESTADO_USUARIO"]=="ACTIVO")
                         {
                             /*con el filtro anterior, podemos crear la variable de sesión a fin de conocer
                             cual usuario está logueado en el sistema*/
@@ -56,7 +56,7 @@ class ContrlUsuario
                             $_SESSION["APELLIDOS"]=$respuesta["APELLIDOS"];
                             $_SESSION["DESCRIPCION"]=$respuesta["ROL"];
                             /*almacenar el último login */
-
+                            
                             $act=ModelUsuario::mdlActualizarLogin($_SESSION["NIP"]);
                             if($act==true)
                             {
@@ -66,7 +66,6 @@ class ContrlUsuario
                                 window.location="ini";
                                 </script>';
                             }
-                            $nipSesion=$_SESSION["NIP"];
                         }
                         else
                         {
@@ -155,7 +154,6 @@ class ContrlUsuario
                 $nuevaTupla=array("NIP"=> $_POST["nipNuevo"],
                             "NOMBRES"=> $_POST["nombreNuevo"],
                             "APELLIDOS"=> $_POST["apellidoNuevo"],
-                            "CORREO_INSTITUCIONAL"=> $_POST["correoNuevo"],
                             "ID_ROL_USUARIO"=> $_POST["rolNuevo"],
                             /*ENnvío ya la clave encriptada */
                             "ACCESO"=> $encrypt,
@@ -289,7 +287,6 @@ class ContrlUsuario
                 $nuevaTupla=array("NIP"=> $_POST["nipEditar"],
                             "NOMBRES"=> $_POST["nombreEditar"],
                             "APELLIDOS"=> $_POST["apellidoEditar"],
-                            "CORREO_INSTITUCIONAL"=> $_POST["correoEditar"],
                             "ID_ROL_USUARIO"=> $_POST["rolEditar"],
                             /*ENnvío ya la clave encriptada */
                             "ACCESO"=> $encrypt,
@@ -337,7 +334,7 @@ class ContrlUsuario
                             swal.fire({
                                 type:"error",
                                 icon: "error",
-                                title: "Revise sus datos por favor",
+                                title: "La contraseña debe incluir números y letras",
                             }).then((result)=>{
                                 window.location="usuario";
                             }); 
@@ -390,6 +387,17 @@ class ContrlUsuario
             }
         }
 
+    }
+
+    static public function controlerVerDatos()
+    {
+        if(isset($_SESSION["NIP"]))
+        {
+            $ans=ModelUsuario::mdlObtenerDatos();
+
+            return $ans;
+
+        }
     }
 
 }

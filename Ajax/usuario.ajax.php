@@ -69,7 +69,7 @@ if(isset($_POST["nipEditarUsuario"]))
 
 /*creando objetos que recibirán las variables post para editar
 el estado del usuario */
-if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==1)
+if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==4)
 {
     /*creando un objeto para la edición de usuario */
     $edicion = new AjaxUsuario();
@@ -79,12 +79,12 @@ if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==1)
     con el NIP del usuario que está en la variable POST de edicion de estado */
     $edicion->NIPusuarioActDes=$_POST["NIPusr"];
     /*almacenando el estado del usuario */
-    $edicion->idEstadoUsrActDes=2;
+    $edicion->idEstadoUsrActDes=5;
     /*método para cambiar el estado del usuario */
     $edicion->ajaxCambiarEstadoUsuario();
 }
 
-if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==2)
+if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==5)
 {
     /*creando un objeto para la edición de usuario */
     $edicion = new AjaxUsuario();
@@ -94,7 +94,7 @@ if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==2)
     con el NIP del usuario que está en la variable POST de edicion de estado */
     $edicion->NIPusuarioActDes=$_POST["NIPusr"];
     /*almacenando el estado del usuario */
-    $edicion->idEstadoUsrActDes=1;
+    $edicion->idEstadoUsrActDes=4;
     /*método para cambiar el estado del usuario */
     $edicion->ajaxCambiarEstadoUsuario();
 }

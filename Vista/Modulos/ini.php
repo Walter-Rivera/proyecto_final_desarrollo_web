@@ -7,11 +7,11 @@
     <section class="content-header">
       <h1>
         <b>Inicio</b> 
-        <small>Dashboard Almacén TFM</small>
+        <small>Dashboard TFM</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> Inicio</a></li>
-        <li class="active">Dashboard Almacén TFM</li>
+        <li class="active">Dashboard TFM</li>
       </ol>
     </section>
 

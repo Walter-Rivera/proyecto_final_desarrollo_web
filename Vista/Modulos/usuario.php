@@ -19,7 +19,7 @@ permisos el usuario, lo redirecciona a la página de inicio*/
     <section class="content-header">
       <h1>
         <b>Administración de Usuarios</b> 
-        <small>Almacén TFM</small>
+        <small>TFM</small>
       </h1>
       <ol class="breadcrumb">
         <li><a href="ini"><i class="fa fa-dashboard"></i> Inicio</a></li>
@@ -64,7 +64,6 @@ permisos el usuario, lo redirecciona a la página de inicio*/
                 <th>Nip</th>
                 <th>Nombres</th>
                 <th>Apellidos</th>
-                <th>Correo Institucional</th>
                 <th>Estado</th>
                 <th>Rol</th>
                 <th>Contraseña</th>
@@ -143,16 +142,6 @@ el formulario para creación de un nuevo usuario-->
               </div>
             </div>
 
-            <!--para recolectar el correo del nuevo usuario-->
-            <div class="form-group">
-                <!--este input group lo que permite es agrupar 
-                un ícono con los datos que ingrese el usuario-->
-                <div class="input-group">
-                  <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                  <input class="form-control input-lg" type="email" name="correoNuevo" placeholder="correo electrónico institucional" required>
-                </div>
-              </div>
-
 
               <!--para recolectar el rol del nuevo usuario-->
               <div class="form-group">
@@ -160,11 +149,8 @@ el formulario para creación de un nuevo usuario-->
               un ícono con los datos que ingrese el usuario-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-users"></i></span>
-                <select class="form-control input-lg" name="rolNuevo">
+                <select class="form-control input-lg" name="rolNuevo" id="rolNuevo">
                   <option value="">Seleccione un rol...</option>
-                  <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-                  <option value="ENCARGADO_ALMACEN">ENCARGADO_ALMACEN</option>
-                  <option value="JEFATURA">JEFATURA</option>
                 </select>
               </div>
             </div>
@@ -253,28 +239,14 @@ el formulario para creación de un nuevo usuario-->
               </div>
             </div>
 
-            <!--para recolectar el correo del nuevo usuario-->
-            <div class="form-group">
-                <!--este input group lo que permite es agrupar 
-                un ícono con los datos del usuario-->
-                <div class="input-group">
-                  <span class="input-group-addon"><i class="fa fa-envelope"></i></span>
-                  <input class="form-control input-lg" type="email" id="correoEditar" name="correoEditar" value="" required>
-                </div>
-              </div>
-
-
               <!--para recolectar el rol del  usuario-->
               <div class="form-group">
               <!--este input group lo que permite es agrupar 
               un ícono con los datos del usuario-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-users"></i></span>
-                <select class="form-control input-lg" name="rolEditar">
+                <select class="form-control input-lg" name="rolEditar" id="rolEditar">
                   <option value="" id="optEditarRol">Editar Rol</option>
-                  <option value="ADMINISTRADOR">ADMINISTRADOR</option>
-                  <option value="ENCARGADO_ALMACEN">ENCARGADO_ALMACEN</option>
-                  <option value="JEFATURA">JEFATURA</option>
                 </select>
               </div>
             </div>
