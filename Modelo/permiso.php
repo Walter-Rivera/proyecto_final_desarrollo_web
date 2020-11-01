@@ -10,7 +10,7 @@
             /*creando un objeto para instanciar un objeto PDO
             Para hacer una conexión más segura, este lleva consigo 
             4 paramétros*/
-            $link= new PDO("mysql:host=127.0.0.1;dbname=prueba_bodega_tfm",
+            $link= new PDO("mysql:host=127.0.0.1;dbname=tfm",
                 "root","",$opc);
 
             /*evaluando la información que viene en la conexión,
