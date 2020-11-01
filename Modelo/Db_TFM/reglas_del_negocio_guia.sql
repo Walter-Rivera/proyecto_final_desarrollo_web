@@ -83,7 +83,7 @@ BEGIN
 END;
 
 COMMIT;
-select * from usuario_sistema where nip=1751;
+
 /*procedimiento almacenado para la actualización de datos de un usuario*/
 DROP PROCEDURE IF EXISTS PA_ACTUALIZAR_USUARIO_SISTEMA; 
 CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZAR_USUARIO_SISTEMA`(IN NIP_FIJO INT, IN NOMBRES_USR_EDITAR VARCHAR(100),
@@ -370,9 +370,6 @@ BEGIN
     ELSE
         RETURN @VERIFICAR_NIP;
     END IF;
-
-
-
 
 
 
