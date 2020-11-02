@@ -61,6 +61,33 @@ ALTER TABLE CAMPO_AFECTADO_PERITO MODIFY COLUMN ID_CAMPO INT(3) AUTO_INCREMENT;
 
 
 
+
+/*tabla TIPO_MOVIMIENTO_SECCION: contiene la definición de acciones sobre la tabla seccion siendo 
+inserción, actualización y baja(no hacer visible los datos al usuario en el frontend)*/
+CREATE TABLE TIPO_MOVIMIENTO_SECCION
+(
+    ID_TIPO_MOVIMIENTO INT(3),
+    DESCRIPCION VARCHAR(100)
+);
+ALTER TABLE TIPO_MOVIMIENTO_SECCION ADD CONSTRAINT PK_TMSEC PRIMARY KEY(ID_TIPO_MOVIMIENTO);
+ALTER TABLE TIPO_MOVIMIENTO_SECCION MODIFY COLUMN ID_TIPO_MOVIMIENTO INT(3) AUTO_INCREMENT;
+
+
+/*tabla CAMPO_AFECTADO_SECCION: Poseerá dentro de las tuplas que albergue, los nombres correspondientes
+de cada campo de la tabla seccion, esto a fin de registrar en la bitácora cual campo fue afectado 
+por una acción del usuario en el crud (creación, actualización ,"borrado->baja")*/
+CREATE TABLE CAMPO_AFECTADO_SECCION
+(
+    ID_CAMPO INT(3),
+    DESCRIPCION VARCHAR(100)
+);
+ALTER TABLE CAMPO_AFECTADO_SECCION ADD CONSTRAINT PK_CASEC PRIMARY KEY(ID_CAMPO);
+ALTER TABLE CAMPO_AFECTADO_SECCION MODIFY COLUMN ID_CAMPO INT(3) AUTO_INCREMENT;
+
+
+
+
+
 CREATE TABLE ESTADO_GESTION
 (
     ID_ESTADO_GESTION INT(3),
@@ -1312,3 +1339,6 @@ BEGIN
         VALUES(new.ID_PERITO,5,6,NOW(),new.ULTIMO_USUARIO_MODIFICADOR,old.ULTIMO_USUARIO_MODIFICADOR,new.ULTIMO_USUARIO_MODIFICADOR);
     END IF;
 END// DELIMITER;
+
+
+
