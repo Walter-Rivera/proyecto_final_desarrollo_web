@@ -196,10 +196,10 @@ class ContrlPerito
         /*verifico el id del perito a eliminar (NIP) y
         que el id del perito responsable de la ejecución de  la acción
         sean registrados*/
-        if(isset($_GET["id_Perito_baja"]))
+        if(isset($_GET["id_perito_baja"]))
         {
             /*solicitamos al modelo que ejecute la acción y envie respuesta */
-            $res=ModelPerito::mdlBorrarPerito($_GET["id_Perito_baja"],$_GET["nip_Perito_Responsable"]);
+            $res=ModelPerito::mdlBorrarPerito($_GET["id_perito_baja"],$_GET["nip_perito_Responsable"]);
             /*luego de obtener respuesta del modelo,
             verifico si la acción fue realizada con éxito */
             if($res==true)

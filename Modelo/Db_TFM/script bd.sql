@@ -103,6 +103,11 @@ ALTER TABLE ESTADO_USUARIO MODIFY COLUMN ID_ESTADO_USR INT(3) AUTO_INCREMENT;
 
 
 
+/*ROL_USUARIO: Contendrá en su definición, los roles necesarios en el sistema,
+de momento se definieron 3 principales siendo:
+*Administrador
+*Jefatura
+*Auxiliar_Administrativo*/
 
 CREATE TABLE ROL_USUARIO
 (
@@ -157,6 +162,8 @@ ALTER TABLE PERITO ADD CONSTRAINT FK_EP FOREIGN KEY(ID_ESTADO_PERITO)
 REFERENCES ESTADO_PERITO(ID_ESTADO_PERITO);
 ALTER TABLE PERITO ADD CONSTRAINT FK_IDULTMODF FOREIGN KEY(ULTIMO_USUARIO_MODIFICADOR)
 REFERENCES USUARIO_SISTEMA(ID_USUARIO);
+
+
 /*al igual que la tabla PERITO, la tabla USUARIO_SISTEMA
 no poseerá en su id de llave primaria la característica de ser 
 autoncrementable, pues el ID_USUARIO será ingresado conforme 
@@ -167,7 +174,6 @@ El campo de contraseña (acceso) será encriptado posteriormente
 cuando se inserten los datos a traves del algoritmo y funcion
 que dota mysql SHA*
 */
-
 CREATE TABLE USUARIO_SISTEMA
 (
     ID_USUARIO INT(6),
@@ -188,7 +194,19 @@ ALTER TABLE USUARIO_SISTEMA ADD CONSTRAINT FK_URMOD FOREIGN KEY(ULTIMO_USUARIO_M
 REFERENCES USUARIO_SISTEMA(ID_USUARIO);
 
 
+/*Esta tabla tendrá los datos correspondientes a los tipos de gestiones que se manejan en
+Tanatología Forense Metropolitana siendo:
+o   Necropsia.
+o	Ampliación.
+o	Rectificación.
+o	Reiteración de orden.
+o	Búsqueda de personas desaparecidas.
+o	Correlaciones de expedientes clínicos y necropsias.
+o	Citaciones a debates (presenciales o videoconferencias).
+o	Respuesta Administrativa (por parte de Jefatura de Tanatología Forense).
+o	SG(Asistencias Judiciales).
 
+*/
 CREATE TABLE TIPO_GESTION
 (
     ID_TIPO_GESTION INT(3),
