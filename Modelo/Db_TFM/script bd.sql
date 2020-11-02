@@ -1231,3 +1231,25 @@ BEGIN
             SIGNAL SQLSTATE '20028' SET MESSAGE_TEXT="¡Usted no tiene privilegios para realizar esta acción!";
         END IF;
     END// DELIMITER;
+
+
+
+/*******************************************************************************/
+                        /*TRIGGERS CRUD PERITO */
+/*******************************************************************************/
+
+/*TRIGGER PARA REGISTRAR LA CREACIÓN DE UN PERITO (INSERCIÓN DE PERITO), SOLO 
+SE ALMACENA EL "MOVIMIENTO" YA EN LA ACTUALIZACIÓN DE DATOS, SERÁ OTRO TRIGGER
+ QUE SE DISPARARÁ*/
+DROP TRIGGER IF EXISTS AI_PERITO_SISTEMA;
+DELIMITER// 
+/*Trigger para registar la creación de un nuevo usuario*/
+CREATE DEFINER=`root`@`localhost` TRIGGER AI_PERITO_SISTEMA
+    AFTER INSERT ON PERITO
+    FOR EACH ROW
+    BEGIN
+      INSERT INTO BITACORA_PERITO(ID_PERITO_AFECTADO,ID_TIPO_MOVIMIENTO,
+      FECHA_MOVIMIENTO,ID_USR_RESPONSABLE)
+      VALUES(new.ID_PERITO,4,NOW(),new.ULTIMO_USUARIO_MODIFICADOR);
+  	END// DELIMITER;
+
