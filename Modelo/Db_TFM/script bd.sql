@@ -1116,3 +1116,37 @@ BEGIN
             SIGNAL SQLSTATE '20023' SET MESSAGE_TEXT = '¡USTED NO TIENE PRIVILEGIOS PARA RELIZAR ESTAS ACCIONES!';
         END IF;    
 END// DELIMITER;
+
+
+
+/*Procedimiento Almacenado para la actualización de estado de un perito*/
+/*Recibe como parámetros el nip del perito a modificar el estado, el estado nuevo (activo, inactivo)
+y el NIP del usuario logueado que hace la modificación del estado*/
+DROP PROCEDURE  IF EXISTS PA_ACTUALIZACION_ESTADO_PER;
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZACION_ESTADO_PER`(IN NIP_FIJO INT, IN ESTADO_USUARIO INT,IN NIP_USR_RESP INT)
+BEGIN
+    /*excepción para hacer rolLback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, sino
+    en alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20024' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de actualización de estado del perito";
+    END;
+
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR OTRO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_USR_RESP));
+        IF(@PRIVILEGIOS=1) THEN
+            UPDATE PERITO SET ID_ESTADO_PERITO=ESTADO_USUARIO WHERE ID_PERITO=NIP_FIJO;
+            UPDATE PERITO SET ULTIMO_USUARIO_MODIFICADOR=NIP_USR_RESP WHERE ID_PERITO=NIP_FIJO;
+            commit;
+        ELSE
+            SIGNAL SQLSTATE '20025' SET MESSAGE_TEXT = "¡Usted no tiene privilegios de Administrador!";
+            ROLLBACK;
+        END IF;
+    COMMIT;
+    END// DELIMITER;
+
