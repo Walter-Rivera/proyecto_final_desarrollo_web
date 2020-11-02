@@ -521,6 +521,12 @@ INNER JOIN ROL_USUARIO R
 ON US.ID_ROL=R.ID_ROL WHERE EU.NOMBRE<>'BAJA');
 
 
+/*vista para mostrar  el rol de usuarios actuales en el sistema*/
+DROP VIEW IF EXISTS VISTA_DATOS;
+DELIMITER //
+CREATE VIEW VISTA_DATOS(DESCRIPCION) AS (SELECT DESCRIPCION FROM ROL_USUARIO);
+// DELIMITER;
+
 /***********************************************************************************************************/
                                         /*FUNCIONES CRUD USUARIO*/
 /***********************************************************************************************************/
@@ -827,6 +833,35 @@ BEGIN
 /*CALL PA_BAJA_USR_SISTEMA(1754,1751);*/
 
 
+/*Procedimiento almacenado para guardar el último ingreso al sistema por parte del usuario*/
+DROP PROCEDURE IF EXISTS PA_ACTUALIZACION_ULTIMO_LOGIN; 
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZACION_ULTIMO_LOGIN`(IN NIP_FIJO INT,IN NIP_USR_RESP INT)
+BEGIN
+    /*excepción para hacer rolback si surge una excepción de sql durante la 
+    ejecución de alguna consulta*/
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20015' SET MESSAGE_TEXT = "ERROR AL GRABAR LA ACTUALIZACION, COMUNIQUESE CON EL DBA";
+    END;
+    /*excepción para hacer rolback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, SINO
+    EN alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20016' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de actualización de usuario";
+    END;
+
+    START TRANSACTION;
+            UPDATE USUARIO_SISTEMA SET ULTIMO_LOGIN=NOW() WHERE ID_USUARIO=NIP_FIJO;
+            UPDATE USUARIO_SISTEMA SET ULTIMO_USUARIO_MODIFICADOR=NIP_USR_RESP WHERE ID_USUARIO=NIP_FIJO;
+    COMMIT;
+
+END// DELIMITER;
+
 
 /*******************************************************************************/
                         /*TRIGGERS CRUD USUARIO */
@@ -920,63 +955,3 @@ END// DELIMITER;
 
 
 
-/*Procedimiento almacenado para guardar el último ingreso al sistema por parte del usuario*/
-DROP PROCEDURE IF EXISTS PA_ACTUALIZACION_ULTIMO_LOGIN; 
-DELIMITER //
-CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZACION_ULTIMO_LOGIN`(IN NIP_FIJO INT,IN NIP_USR_RESP INT)
-BEGIN
-    /*excepción para hacer rolback si surge una excepción de sql durante la 
-    ejecución de alguna consulta*/
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-         SIGNAL SQLSTATE '20015' SET MESSAGE_TEXT = "ERROR AL GRABAR LA ACTUALIZACION, COMUNIQUESE CON EL DBA";
-    END;
-    /*excepción para hacer rolback si surge una excepción de sql durante la 
-    ejecución del procedimiento almacenado (no en algún query como tal, SINO
-    EN alguna fase de compilación del procedimiento almacenado)*/
-    DECLARE EXIT HANDLER FOR SQLWARNING
-    BEGIN
-        ROLLBACK;
-         SIGNAL SQLSTATE '20016' SET MESSAGE_TEXT = "errror durante
-         la ejecución del procedimiento de actualización de usuario";
-    END;
-
-    START TRANSACTION;
-            UPDATE USUARIO_SISTEMA SET ULTIMO_LOGIN=NOW() WHERE ID_USUARIO=NIP_FIJO;
-            UPDATE USUARIO_SISTEMA SET ULTIMO_USUARIO_MODIFICADOR=NIP_USR_RESP WHERE ID_USUARIO=NIP_FIJO;
-    COMMIT;
-
-END// DELIMITER;
-
-
-
-DROP VIEW IF EXISTS VISTA_DATOS;
-DELIMITER //
-CREATE VIEW VISTA_DATOS(DESCRIPCION) AS (SELECT DESCRIPCION FROM ROL_USUARIO);
-// DELIMITER;
-
-
-
-
-
-
-
-select * from usuario_sistema;
-select * from bitacora_usuario;
-select * from vista_crud_usuario;
-
-/*UPDATE USUARIO_SISTEMA SET ID_ROL=4 WHERE ID_USUARIO=1751*/
-
-/*CALL PA_ACTUALIZAR_USUARIO_SISTEMA(1751,'WALTER','RIVERA','ADMINISTRADOR','$2a$07$lsijooasdljiwIQKTBQRwelFk8HK5J53rB8BoMqmQ5b8ZuWg2kLYu',1751);
-
-CALL PA_ACTUALIZACION_ESTADO_USR(1759,5,1751);
-
-CALL PA_BAJA_USR_SISTEMA(1759,1751);
-
-select * from tipo_movimiento_usuario;
-SELECT * FROM  CAMPO_AFECTADO_USUARIO;
-SELECT * FROM ROL_USUARIO;
-SELECT * FROM USUARIO_SISTEMA;
-
-SELECT * FROM BITACORA_USUARIO;*/
