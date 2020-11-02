@@ -1411,6 +1411,25 @@ END// DELIMITER;
                                         /*CRUD SECCION*/
 /********************************************************************************/
 
+/*********************************************************************************/
+                                        /*FUNCIONES CRUD SECCION*/
+/********************************************************************************/
+
+/*FUNCION PARA DEVOLVER EL ID DEL TIPO DE "ESTADO BAJA"*/
+DROP FUNCTION IF EXISTS FUNCT_DEVOLVER_ESTADO_SECC_BAJA;
+DELIMITER //
+CREATE FUNCTION FUNCT_DEVOLVER_ESTADO_SECC_BAJA() RETURNS INT(03)
+BEGIN
+    DECLARE ID_ESTADO_BAJA INT;
+    SET ID_ESTADO_BAJA=(SELECT ID_ESTADO_SECCION FROM ESTADO_SECCION WHERE NOMBRE="BAJA" LIMIT 1);
+
+    IF(ID_ESTADO_BAJA!='') THEN
+        RETURN ID_ESTADO_BAJA;
+    ELSE
+        SIGNAL SQLSTATE '20038' SET MESSAGE_TEXT = "ERROR AL BUSCAR EL ESTADO DE SECCION, CONTACTE AL DBA";
+    END IF;
+END// DELIMITER;
+
 
 /*******************************************************************************/
                         /*PROCEDIMIENTOS ALMACENADOS CRUD PERITO */
@@ -1528,4 +1547,4 @@ BEGIN
         END IF;    
 END// DELIMITER;
 
-
+select * from seccion;
