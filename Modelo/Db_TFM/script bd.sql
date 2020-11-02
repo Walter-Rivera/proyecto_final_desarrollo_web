@@ -955,3 +955,83 @@ END// DELIMITER;
 
 
 
+/*******************************************************************************/
+                        /* CRUD PERITO*/
+/*******************************************************************************/
+/*******************************************************************************/
+                        /*VISTA CRUD PERITO */
+/*******************************************************************************/
+
+/*VISTA PARA MOSTRAR AL USUARIO FINAL EN EL FRONTEND LOS DATOS QUE PODRÁ MODIFICAR,
+A EXCEPCION DEL ID_USUARIO (NIP)*/
+DROP VIEW IF EXISTS VISTA_CRUD_PERITO;
+DELIMITER//
+CREATE VIEW VISTA_CRUD_PERITO
+(NIP,NOMBRES,APELLIDOS,ESTADO_PERITO)
+AS
+(SELECT  PER.ID_PERITO,PER.NOMBRES,PER.APELLIDOS,EP.NOMBRE FROM PERITO PER 
+INNER JOIN ESTADO_PERITO EP
+ON PER.ID_ESTADO_PERITO=EP.ID_ESTADO_PERITO AND EP.NOMBRE<>'BAJA');
+//DELIMITER;
+
+
+/*******************************************************************************/
+                        /*FUNCIONES CRUD PERITO */
+/*******************************************************************************/
+/*función para determinar si existe ya un PERITO con el nip en el sistema*/
+DROP FUNCTION IF EXISTS FUNCT_EXISTE_PERITO_SISTEMA;
+DELIMITER //
+CREATE FUNCTION FUNCT_EXISTE_PERITO_SISTEMA(NIP_NUEVO INT) RETURNS INT
+BEGIN
+    SET @VERIFICAR_ID_USR=(SELECT COUNT(*) FROM PERITO WHERE ID_PERITO=NIP_NUEVO);
+
+    IF(@VERIFICAR_ID_USR>0) THEN
+        RETURN @VERIFICAR_ID_USR;
+    ELSE
+        RETURN @VERIFICAR_ID_USR;
+    END IF;
+END// DELIMITER;
+
+
+
+
+/*******************************************************************************/
+                        /*PROCEDIMIENTOS ALMACENADOS CRUD PERITO */
+/*******************************************************************************/
+
+/*PROCEDIMIENTO ALMACENADO PARA LA CREACIÓN DE UN PERITO*/
+DROP PROCEDURE IF EXISTS PA_CREAR_PERITO_SISTEMA;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_CREAR_PERITO_SISTEMA`(IN NIP_NUEVO INT, IN NOMBRES_USR_NUEVO VARCHAR(200),IN APELLIDOS_USR_NUEVO VARCHAR(100),IN NIP_ULT_USR_MOD INT,IN NOMBRE_ROL_USR_RESP VARCHAR(100))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20020' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de creación de PERITO";
+    END;
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR AL PERITO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            /*VERIFICAMOS SI EL PERITO EXISTE EN EL SISTEMA*/
+            SET @EXISTE_PERITO = (SELECT FUNCT_EXISTE_PERITO_SISTEMA(NIP_NUEVO));
+            IF(@EXISTE_PERITO=0) THEN
+                /*EVALUAMOS QUE EL ROL EXISTE EN LA BD Y EXTRAEMOS EL ID DE ESTE*/
+                SET @NROL_USUARIO_MOD=(SELECT ID_ROL FROM ROL_USUARIO
+                WHERE DESCRIPCION=NOMBRE_ROL_USR_RESP LIMIT 1);
+                /*SI NO NOS DEVUELVE NULL ó 0*/ 
+                IF(@NROL_USUARIO_MOD IN(4,5,6)) THEN
+                    INSERT INTO PERITO VALUES(NIP_NUEVO,NOMBRES_USR_NUEVO,APELLIDOS_USR_NUEVO,NOW(),4,NIP_ULT_USR_MOD);
+                ELSE
+                SIGNAL SQLSTATE '20017' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+                END IF;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20018' SET MESSAGE_TEXT = 'El PERITO ya existe, sino lo observa en la tabla, comuníquese con el desarrollador';
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20019' SET MESSAGE_TEXT='¡Usted no tiene privilegios de Administrador!';
+            ROLLBACK;
+        END IF;
+END;

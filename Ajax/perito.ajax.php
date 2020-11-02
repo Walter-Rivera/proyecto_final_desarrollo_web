@@ -17,11 +17,11 @@ class AjaxPerito
     /*activar / desactivar perito */
     /*declaro las variables para recuperar los datos a modificar (estado perito, nip) */
     public $NIPperitoActDes;
-    public $idEstadoUsrActDes;
+    public $idestadoPerActDes;
 
   
     /*función para tomar el NIP del perito */
-    public function ajaxEdicionUsurio()
+    public function ajaxEdicionPerito()
     {
         /*columna a evaluar en la bd */
         $columna="NIP";
@@ -42,9 +42,9 @@ class AjaxPerito
         /*a este método del modelo le vamos a mandar 2 parámetros, el nip del perito y el 
         id del estado al cual queremos cambiarlo*/
         $numeroPerito=$this->NIPperitoActDes;
-        $estado=$this->idEstadoUsrActDes;
+        $estado=$this->idestadoPerActDes;
         $usr_Responsable=$this->NIP_USR_RESPONSABLE;
-        $ans=ModelPerito::MdlActualizarEstadoPerito($numeroPerito,$estado,$usr_Responsable);
+        $ans=ModelPerito::mdlActualizarEstadoPerito($numeroPerito,$estado,$usr_Responsable);
         /*el resultado de la bd,
         lo devolvemos en un json codificado (el resultado
         de la consulta) */
@@ -64,12 +64,12 @@ if(isset($_POST["nipEditarPerito"]))
     con el NIP del perito que está en nuestra variable POST */
     $edicion->nipUsuari=$_POST["nipEditarPerito"];
     /*Ejecutando el método para enviar el NIP de perito */
-    $edicion->ajaxEdicionUsurio();
+    $edicion->ajaxEdicionPerito();
 }
 
 /*creando objetos que recibirán las variables post para editar
 el estado del perito */
-if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==4)
+if(isset($_POST["estadoPer"]) && $_POST["estadoPer"]==4)
 {
     /*creando un objeto para la edición de perito */
     $edicion = new AjaxPerito();
@@ -77,14 +77,14 @@ if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==4)
     $edicion->NIP_USR_RESPONSABLE=$_POST["RESPON"];
     /*enlazando la variable de clase 
     con el NIP del perito que está en la variable POST de edicion de estado */
-    $edicion->NIPperitoActDes=$_POST["NIPusr"];
+    $edicion->NIPperitoActDes=$_POST["NIPper"];
     /*almacenando el estado del perito */
-    $edicion->idEstadoUsrActDes=5;
+    $edicion->idestadoPerActDes=5;
     /*método para cambiar el estado del perito */
     $edicion->ajaxCambiarEstadoPerito();
 }
 
-if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==5)
+if(isset($_POST["estadoPer"]) && $_POST["estadoPer"]==5)
 {
     /*creando un objeto para la edición de perito */
     $edicion = new AjaxPerito();
@@ -92,9 +92,9 @@ if(isset($_POST["estadoUsr"]) && $_POST["estadoUsr"]==5)
     $edicion->NIP_USR_RESPONSABLE=$_POST["RESPON"];
     /*enlazando la variable de clase 
     con el NIP del perito que está en la variable POST de edicion de estado */
-    $edicion->NIPperitoActDes=$_POST["NIPusr"];
+    $edicion->NIPperitoActDes=$_POST["NIPper"];
     /*almacenando el estado del perito */
-    $edicion->idEstadoUsrActDes=4;
+    $edicion->idestadoPerActDes=4;
     /*método para cambiar el estado del perito */
     $edicion->ajaxCambiarEstadoPerito();
 }

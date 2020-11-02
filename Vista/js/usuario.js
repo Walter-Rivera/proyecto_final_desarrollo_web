@@ -140,7 +140,7 @@ $(".VtUsuarios tbody").on("click","button.botonActivar",function(){
             swal.fire({
                 type:"error",
                 icon: "error",
-                title: "¡Usted no tiene privilegios!",
+                title: "¡Usted no tiene privilegios!"+xhr,
                 showConfirmButton: false,
                 timer: 2000
             }).then((result)=>{
@@ -207,6 +207,7 @@ $.ajax({
     }
 });
 */
+
 
 var opcionRol= document.querySelector('#rolNuevo');
 opcionRol.addEventListener("click",function alternativa(ev){

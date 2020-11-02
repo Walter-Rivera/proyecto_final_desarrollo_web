@@ -9,13 +9,15 @@ por ende, voy a relizar esta tarea, (cargar los registros de la bd
     en un archivo ajax, para luego mostarlos en el html*/
 /*
 $.ajax({
-    url: "Ajax/tablaUsuario.ajax.php",
+    url: "Ajax/tablaPerito.ajax.php",
     success:(ans)=>{
         console.log("respuesta", ans);
     }
-});*/
-$(".VtUsuarios").DataTable({
-  "ajax":"Ajax/tablaUsuario.ajax.php",
+});
+*/
+
+$(".VtPeritos").DataTable({
+  "ajax":"Ajax/tablaPerito.ajax.php",
   "language":{
         "sProcessing":  "Procesando",
         "sLengthMenu":  "Mostrar_MENU_registros",
@@ -40,33 +42,31 @@ $(".VtUsuarios").DataTable({
         "sSortDescending": "Orden descendente"
     }
     }
-
 });
 
 
 
 
 
-
-/*edición del usuario */
+/*edición del perito */
 /*este evento se activará cuando le presione click
 al boton de edición en nuestra vista*/
-$(".VtUsuarios tbody").on("click","button.botonEditarUsuario",function()
+$(".VtPeritos tbody").on("click","button.botonEditarPerito",function()
 {
     
-    var nipUsuario = $(this).attr("nipEditarUsuario");
-    console.log(nipUsuario);
+    var nipperito = $(this).attr("nipEditarPerito");
+    //console.log(nipperito);
     /*creo una variable para utilizar un formulario de js */
     var info= new FormData();
     /*creamos una variable post con el 
     nip del usurio seleccionado de la tabla */
-    info.append("nipEditarUsuario",nipUsuario)
+    info.append("nipEditarPerito",nipperito)
     /*conexión a la base de datos por medio 
-    de ajax para recuperar los datos  del usuario 
+    de ajax para recuperar los datos  del perito 
     que vamos a editar y mostrarlos en el modal,
     se creará un archivo en la en la carpeta ajax con este fin */
     $.ajax({
-        url:"Ajax/usuario.ajax.php",
+        url:"Ajax/perito.ajax.php",
         method: "POST",
         data: info,
         cache: false,
@@ -79,9 +79,6 @@ $(".VtUsuarios tbody").on("click","button.botonEditarUsuario",function()
            document.querySelector('#nipEditar').value=contenido["NIP"];
            document.querySelector('#nombreEditar').value=contenido["NOMBRES"];
            document.querySelector('#apellidoEditar').value=contenido["APELLIDOS"];
-           document.querySelector('#optEditarRol').value=contenido["ROL"];
-           document.querySelector('#optEditarRol').innerHTML=contenido["ROL"];
-           document.querySelector('#contraActual').value=contenido["ACCESO"];
            
         },
     });
@@ -89,28 +86,28 @@ $(".VtUsuarios tbody").on("click","button.botonEditarUsuario",function()
 );
 
 
-/*evento para detectar cuando se presione el cambio de estado de un usuario*/
-$(".VtUsuarios tbody").on("click","button.botonActivar",function(){
+/*evento para detectar cuando se presione el cambio de estado de un perito*/
+$(".VtPeritos tbody").on("click","button.botonActivarPer",function(){
 
-    /*tomando el valor del atributo para capturar el NIP del usuario responsable en modificar */
-    var nip_Usuario_Responsable=$(this).attr("RESPON");
-    /*tomando el valor del atributo para capturar el NIP del usuario a modificar*/
-    var NIPusr=$(this).attr("NIPusr");
-    /*tomando el valor del atributo para capturar el estado del usuario en el sistema
+    /*tomando el valor del atributo para capturar el NIP del perito responsable en modificar */
+    var nip_perito_Responsable=$(this).attr("RESPON");
+    /*tomando el valor del atributo para capturar el NIP del perito a modificar*/
+    var NIPper=$(this).attr("NIPper");
+    /*tomando el valor del atributo para capturar el estado del perito en el sistema
     1-activo
     2-inactivo */
-    var estadoUsr=$(this).attr("estadoUsr");
+    var estadoPer=$(this).attr("estadoPer");
     /*creamos un formulario de datos para luego trabajarlo en ajax */
     var informacion=new FormData(); 
-    /*agregamos los valores de las variables de stado y id usuario */
-    informacion.append("NIPusr",NIPusr);
-    informacion.append("estadoUsr",estadoUsr);
-    informacion.append("RESPON",nip_Usuario_Responsable)
-    //console.log(NIPusr);
-    //console.log(estadoUsuario);
+    /*agregamos los valores de las variables de stado y id perito */
+    informacion.append("NIPper",NIPper);
+    informacion.append("estadoPer",estadoPer);
+    informacion.append("RESPON",nip_perito_Responsable)
+    //console.log(NIPper);
+    //console.log(estadoperito);
     /*petición ajax para la actualización de estado */
     $.ajax({
-        url:"Ajax/usuario.ajax.php",
+        url:"Ajax/perito.ajax.php",
         method: "POST",
         data: informacion,
         cache: false,
@@ -132,7 +129,7 @@ $(".VtUsuarios tbody").on("click","button.botonActivar",function(){
                 showConfirmButton: false,
                 timer: 2000
             }).then((result)=>{
-                window.location="usuario";
+                window.location="perito";
              });
             
         },
@@ -144,20 +141,20 @@ $(".VtUsuarios tbody").on("click","button.botonActivar",function(){
                 showConfirmButton: false,
                 timer: 2000
             }).then((result)=>{
-                    window.location="usuario";
+                    window.location="perito";
             });
         }
     
     });
     /*luego de la actualización del estado, cambiamos las propiedades 
                 del botón, según sea su condición 2=inactivo */
-    if(estadoUsr==1)
+    if(estadoPer==4)
     {
         $(this).removeClass('btn-success');
         $(this).addClass('btn-danger');
         $(this).html('Inactivo');
-        $(this).attr('estadoUsr',5);
-        console.log(estadoUsr+"rojo");
+        $(this).attr('estadoPer',5);
+        console.log(estadoPer+"rojo");
     }
     else
     {
@@ -165,36 +162,36 @@ $(".VtUsuarios tbody").on("click","button.botonActivar",function(){
         $(this).addClass('btn-success');
         $(this).removeClass('btn-danger');
         $(this).html('Activo');
-        $(this).attr('estadoUsr',4);   
+        $(this).attr('estadoPer',4);   
     }
 });
 
 
-/*dar de baja un usuario del sistema*/
+/*dar de baja un perito del sistema*/
 
-$(".VtUsuarios tbody").on("click","button.botonEliminarUsuario",function(){
+$(".VtPeritos tbody").on("click","button.botonEliminarPerito",function(){
 
-/*tomando el valor del atributo para capturar el NIP del usuario responsable en dar de baja del sistema */
-var nip_Usuario_Responsable=$(this).attr("RESPON");
-/*id del usuario a dar de baja del sistema*/
-var id_Usuario_baja=$(this).attr("nipBorrarUsuario");
+/*tomando el valor del atributo para capturar el NIP del perito responsable en dar de baja del sistema */
+var nip_perito_Responsable=$(this).attr("RESPON");
+/*id del perito a dar de baja del sistema*/
+var id_perito_baja=$(this).attr("nipBorrarPerito");
 
-    /*alerta suave para confirmar la baja del usuario en el sistema*/
+    /*alerta suave para confirmar la baja del perito en el sistema*/
     swal.fire({
-        title:"¿Está seguro de eliminar el usuario?",
+        title:"¿Está seguro de eliminar el perito?",
         icon:'warning',
         showCancelButton:true,
         confirmButtonColor:"red",
         cancelButtonColor:"blue",
         cancelButtonText:"Cancelar",
-        confirmButtonText:"Eliminar Usuario",
+        confirmButtonText:"Eliminar perito",
         /*al terminar el proceso de confirmación */
         }).then((resultado)=>{
             if(resultado.value)
             {
-                /*redirecciono a la pagina usuario, envio por get el id del usuario a eliminar y
+                /*redirecciono a la pagina perito, envio por get el id del perito a eliminar y
                 el responsable en realizar el proceso */
-                window.location="index.php?ruta=usuario&id_Usuario_baja="+id_Usuario_baja+"&nip_Usuario_Responsable="+nip_Usuario_Responsable;
+                window.location="index.php?ruta=perito&id_perito_baja="+id_perito_baja+"&nip_perito_Responsable="+nip_perito_Responsable;
             }
         })
     });

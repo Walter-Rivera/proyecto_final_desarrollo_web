@@ -1,6 +1,6 @@
 <?php
 /*validando acceso a las opciones si no tiene
-permisos el usuario, lo redirecciona a la página de inicio*/
+permisos el perito, lo redirecciona a la página de inicio*/
 /*a la administración de usuarios, solo el admin tendrá acceso*/
   if($_SESSION["DESCRIPCION"]!="ADMINISTRADOR")
   {
@@ -33,10 +33,10 @@ permisos el usuario, lo redirecciona a la página de inicio*/
       <!-- Default box -->
       <div class="box">
         <div class="box-header with-border">
-          <!--Colocando opción para agregar Usuario al Sistema, básicamente
+          <!--Colocando opción para agregar perito al Sistema, básicamente
               al darle click, nos creará una ventana modal para un form y allí colocar los elementos
-            para crear un nuevo usuario-->
-          <button color="red" class="btn btn-primary" data-toggle="modal" data-target="#opcAgregarUsuario">
+            para crear un nuevo perito-->
+          <button color="red" class="btn btn-primary" data-toggle="modal" data-target="#opcAgregarPerito">
             Crear Perito
           </button>
 
@@ -75,7 +75,7 @@ permisos el usuario, lo redirecciona a la página de inicio*/
 
 
   <!--creando una ventana modal para llenar
-el formulario para creación de un nuevo usuario-->
+el formulario para creación de un nuevo perito-->
 
 <!-- Modal tomado de boostrap 4.5 -->
 <div class="modal fade" id="opcAgregarPerito" tabindex="-1" 
@@ -93,12 +93,12 @@ el formulario para creación de un nuevo usuario-->
         <div class="modal-body">
           <!--creando caja para el contenidod del body-->
           <div class="box-body">
-            <!--div para insertar el NIP del usuario-->
+            <!--div para insertar el NIP del perito-->
             <div class="form-group">
 
 
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos que ingrese el usuario-->
+              un ícono con los datos que ingrese el perito-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-id-card"></i></span>
                 <!--atributo de solo lectura para el NIP-->
@@ -109,10 +109,10 @@ el formulario para creación de un nuevo usuario-->
           
           
             <!--creando formulario (clases de bootstrap específicas para realizar formularios)
-            para recolectar el o los nombres del nuevo usuario-->
+            para recolectar el o los nombres del nuevo perito-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos que ingrese el usuario-->
+              un ícono con los datos que ingrese el perito-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user-plus"></i></span>
                 <input class="form-control input-lg" type="text" name="nombreNuevo" placeholder="ingrese Nombre(s)" required>
@@ -120,10 +120,10 @@ el formulario para creación de un nuevo usuario-->
             </div>
 
 
-            <!--para recolectar el o los apellidos del nuevo usuario-->
+            <!--para recolectar el o los apellidos del nuevo perito-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos que ingrese el usuario-->
+              un ícono con los datos que ingrese el perito-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user-plus"></i></span>
                 <input class="form-control input-lg" type="text" name="apellidoNuevo" placeholder="ingrese Apellido(s)" required>
@@ -136,7 +136,7 @@ el formulario para creación de un nuevo usuario-->
           <button type="submit" class="btn btn-primary">Crear</button>
         </div>
         <?php
-          /*código php para guardar la creación del usuario*/
+          /*código php para guardar la creación del perito*/
             $almacenarPerito=new ContrlPerito();
             /*método para guardar los usuarios en el sistema*/
             $almacenarPerito->controlerCrearPerito();
@@ -146,7 +146,7 @@ el formulario para creación de un nuevo usuario-->
   </div>
 </div>
 
- <!--creando una ventana modal para actualizar un usuario-->
+ <!--creando una ventana modal para actualizar un perito-->
 
 <!-- Modal tomado de boostrap 4.5 -->
 <div class="modal fade" id="opcEditarPerito" tabindex="-1" 
@@ -164,12 +164,12 @@ el formulario para creación de un nuevo usuario-->
         <div class="modal-body">
           <!--creando caja para el contenidod del body-->
           <div class="box-body">
-            <!--div para ver el NIP del usuario-->
+            <!--div para ver el NIP del perito-->
             <div class="form-group">
 
 
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos del usuario-->
+              un ícono con los datos del perito-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-id-card"></i></span>
                 <input class="form-control input-lg" type="text" id="nipEditar" name="nipEditar" value="" required readonly>
@@ -179,10 +179,10 @@ el formulario para creación de un nuevo usuario-->
           
           
             <!--creando formulario (clases de bootstrap específicas para realizar formularios)
-            para recolectar el o los nombres del nuevo usuario-->
+            para recolectar el o los nombres del nuevo perito-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono del usuario-->
+              un ícono del perito-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user-plus"></i></span>
                 <input class="form-control input-lg" type="text" id="nombreEditar" name="nombreEditar" value="" required>
@@ -190,10 +190,10 @@ el formulario para creación de un nuevo usuario-->
             </div>
 
 
-            <!--para recolectar el o los apellidos del nuevo usuario-->
+            <!--para recolectar el o los apellidos del nuevo perito-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos del usuario-->
+              un ícono con los datos del perito-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-user-plus"></i></span>
                 <input class="form-control input-lg" type="text" id="apellidoEditar" name="apellidoEditar" value="" required>
@@ -207,7 +207,7 @@ el formulario para creación de un nuevo usuario-->
           <button type="submit" class="btn btn-primary">Actualizar</button>
         </div>
         <?php
-          /*creamos las instancias de la clase controler de usuario 
+          /*creamos las instancias de la clase controler de perito 
           para salvar las modificaciones del individuo */
             $edicionPerito=new ContrlPerito();  
             $edicionPerito->controlerEditarPerito(); 
@@ -220,7 +220,7 @@ el formulario para creación de un nuevo usuario-->
  
 
  <?php
- /*llamando al controlador para eliminar = (dar de baja en el  sistema al usuario)*/
+ /*llamando al controlador para eliminar = (dar de baja en el  sistema al perito)*/
  $borrarUsuario= new ContrlPerito();
 /*método que realiza la acción*/
  $borrarUsuario->controlerBorrarPerito();

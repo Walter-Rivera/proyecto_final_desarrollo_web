@@ -1,112 +1,19 @@
 <?php
 
-class ContrlUsuario
+class ContrlPerito
 {
-    static public function controlerUsuario()
+    static public function controlerPerito()
     {
-        /*incluimos el archivo usuario.php para poder hacer uso del mismo */
-        include "Vista/Modulos/usuario.php";
+        /*incluimos el archivo perito.php para poder hacer uso del mismo */
+        include "Vista/Modulos/perito.php";
     }
 
-    /*función para validar el ingreso del usuario*/
-    static public function controlerIngresoUsuario()
-    {
-        try
-        {
-            
-            /*verificamos si traemos variables enviadas a través del método post del formulario*/
-            if(isset($_POST["nipUsuario"]))
-            {
-                /*haciendo validación del lado del servidor para no permitir valores especiales,
-                a fin de evitar que nos hagan un sql Inyection, solo vamos a aceptar
-                letras y vocales de la a-z y números del 0 al 9*/
-                if(preg_match('/^[0-9]+$/',$_POST["nipUsuario"]) && 
-                    preg_match('/^[a-zA-Z0-9]+$/',$_POST["Ingreso"]))
-                {
-                    /*vamos a enviar a la tabla usuarios los siguientes datos para comprobar
-                    si el usuario existe*/
-                    /*Seleccionamos la tabla a la que queremos ir a hacer la consulta*/
-                    $tbl="VISTA_CRUD_USUARIO";
-                    /*campo a verificar*/
-                    $campo="NIP";
-                    /*Vamos a comparar la variable post (nipUsuario) con $campo*/
-                    $entrada_Usuario=$_POST["nipUsuario"];
-                    /*solicitando respusta del modelo*/
-                    $respuesta=ModelUsuario::MdlMostrarUsuario($tbl,$campo,$entrada_Usuario);
-                    /*mostrando la respuesta, solo extraemos del array que nos trae,
-                    el NIP del usuario*/
-                    /*empezamos a comparar el resultado de la comparación con el modelo, es
-                    decir, validamos si el usuario y contraseña existen en nuestra bd*/
-                    /*Encripto la contraseña con el método salt CRYPT_BLOWFISH */
-                    $encrypt=crypt($_POST["Ingreso"],'$2a$07$lsijooasdljiwIQKTBQRwgrl$');
 
-                    if($respuesta["NIP"] == $_POST["nipUsuario"] && $respuesta["ACCESO"] == $encrypt)
-                    { 
-                       
-                        /*validamos que el usuario esté activo para poder iniciar sesión */
-                        if($respuesta["ESTADO_USUARIO"]=="ACTIVO")
-                        {
-                            /*con el filtro anterior, podemos crear la variable de sesión a fin de conocer
-                            cual usuario está logueado en el sistema*/
-                            $_SESSION["login"]="adelante";
-                            /*también, capturamos los datos del usuario para colocar en el encabezado sus datos
-                            (nombres, apellidos) */
-                            $_SESSION["NIP"]=$respuesta["NIP"];
-                            $_SESSION["NOMBRES"]=$respuesta["NOMBRES"];
-                            $_SESSION["APELLIDOS"]=$respuesta["APELLIDOS"];
-                            $_SESSION["DESCRIPCION"]=$respuesta["ROL"];
-                            /*almacenar el último login */
-                            
-                            $act=ModelUsuario::mdlActualizarLogin($_SESSION["NIP"]);
-                            if($act==true)
-                            {
-                                /*por lo anterior, hacemos un redireccionamiento de ubicación de la página,
-                                a la de inicio,se hará a través de javascript*/
-                                echo '<script>
-                                window.location="ini";
-                                </script>';
-                            }
-                        }
-                        else
-                        {
-                            echo '<br/>';
-                            echo '<div class="alert alert-danger">Usuario Inactivo</div>';
-
-                        }
-                        
-                    }
-                    else
-                    {
-                        /*si alguno de los datos no coincide o ambos,
-                        le mostramos un alert al usuario para notificarle que alguno de los datos
-                        es incorrecto (en esto usamos clases de bootstrap*/
-                        echo '<br/>';
-                        echo '<div class="alert alert-danger">Usuario o Contraseña incorrecta, verifique sus datos por favor</div>';
-                    }
-                }
-            }   
-        }catch(PDOException $ex)
-        {
-             echo
-                '<script>
-                        swal.fire({
-                            type:"error",
-                            icon: "error",
-                            title: "'.$Ex->getMessage().'",
-                        }).then((result)=>{
-                            window.location="usuario";
-                         }); 
-                </script>';
-            
-        }
-        
-    }
-
-    /*método para poder crear un usuario en el sistema*/
-    static public function controlerCrearUsuario()
+    /*método para poder crear un perito en el sistema*/
+    static public function controlerCrearPerito()
     {
         /*si se trea una variable tipo post
-        y se está enviando por medio del formulario de creación de usuario
+        y se está enviando por medio del formulario de creación de perito
         en el front, puede ser cualquier variable del formulario*/
         if(isset($_POST["nipNuevo"]))
         {
@@ -122,65 +29,38 @@ class ContrlUsuario
             que solo se permitan caracteres, no números*/
             if(preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["nombreNuevo"]) &&
                preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["apellidoNuevo"]) &&
-               preg_match('/^[0-9]+$/',$_POST["nipNuevo"])&&
-               preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["contraNuevo"])) 
+               preg_match('/^[0-9]+$/',$_POST["nipNuevo"])) 
             {
-        
-             
-                /*procedo a encriptar la contraseña,
-                la cifraré usando el método salt que consiste en la generación
-                de números aleatorios que se le agregan al código hash al principio y al final */
-                /*para ello, nos apoyamos de la función crypt de php, la cual lleva 2 parámetros
-                el primero es el valor a encriptar,el segundo parámetro es el tipo de salt que voy a usar,
-                en este caso usaré CRYPT_BLOWFISH el cual,
-                según la página oficial de php:
-                CRYPT_BLOWFISH - Hash con Blowfish con un salt como sigue: "$2a$", "$2x$" o "$2y$", 
-                un parámetro de coste de dos dígitos, "$", y 22 caracteres del alfabeto "./0-9A-Za-z". 
-                Utilizar caracteres fuera de este rango en el salt causará que crypt() 
-                devuelva una cadena de longitud cero. El parámetro de coste de dos dígitos es el logaritmo
-                en base 2 de la cuenta de la iteración del algoritmo hach basado en Blowfish subyacente,
-                y debe estar en el rango 04-31; los valores fuera de este rango causarán que crypt() falle. 
-                Las versiones de PHP anteriores a 5.3.7 únicamente admitían "$2a$" como el prefijo para salt:
-                PHP 5.3.7 introdujo los nuevos prefijos para corregir un problema de seguridad 
-                en la implementación de Blowfish. Por favor, consulte » este documento para detalles completos
-                de la corrección de seguridad, pero para resumir, los desarrolladores 
-                que se oriente por PHP 5.3.7 y posteriores deberían usar "$2y$" en vez de "$2a$". */
-                $encrypt=crypt($_POST["contraNuevo"],'$2a$07$lsijooasdljiwIQKTBQRwgrl$');
-
-                
-                
                 /* coloco en un array los datos obtenidos del envío del 
                 formulario a través de las variables tipo $_POST*/
                 $nuevaTupla=array("NIP"=> $_POST["nipNuevo"],
                             "NOMBRES"=> $_POST["nombreNuevo"],
                             "APELLIDOS"=> $_POST["apellidoNuevo"],
-                            "ID_ROL_USUARIO"=> $_POST["rolNuevo"],
-                            /*ENnvío ya la clave encriptada */
-                            "ACCESO"=> $encrypt,
-                            "NIP_ULT_USR_MODIFICADOR"=> $_SESSION["NIP"]
+                            "NIP_ULT_USR_MODIFICADOR"=> $_SESSION["NIP"],
+                            "ROL"=>$_SESSION["DESCRIPCION"]
                             );
 
-                /*enviamos a nuestro modelo de usuario, el nombre de la tabla
+                /*enviamos a nuestro modelo de perito, el nombre de la tabla
                 y array de datos que se obtuvo de la vista*/
-                $answer=ModelUsuario::MdlCrearUsuario($nuevaTupla);
+                $answer=ModelPerito::mdlCrearPerito($nuevaTupla);
 
-                /*si se almacenan correctamente los datos del usuario en la tabla
-                USUARIO_SISTEMA */
+                /*si se almacenan correctamente los datos del perito en la tabla
+                perito */
                 if($answer==true)
                 {
                     /*lanzo una alerta suave (notificación)
-                    que el usuario fue almacenado en la bd correctamente*/
+                    que el perito fue almacenado en la bd correctamente*/
                     echo
                     '<script>
                              
                                 Swal.fire({
                                     position: "center",
                                     icon: "success",
-                                    title: "El usuario Fue creado con éxito",
+                                    title: "El perito Fue creado con éxito",
                                     showConfirmButton: false,
                                     timer: 2000
                                 }).then((result)=>{
-                                    window.location="usuario";
+                                    window.location="perito";
                                 });
                     </script>';
 
@@ -193,18 +73,18 @@ class ContrlUsuario
                             icon: "error",
                             title: "'.$Ex->getMessage().'",
                         }).then((result)=>{
-                            window.location="usuario";
+                            window.location="perito";
                          }); 
                     </script>';
                 }
 
             }
-            /*si los datos que ingresa el usuario no coinciden con 
+            /*si los datos que ingresa el perito no coinciden con 
             las parametrizaciones que realicé a través de las expresiones
             regulares*/
             else
             {
-                /*lanzo un alert para indicarle al usuario que la información
+                /*lanzo un alert para indicarle al perito que la información
                 que brinda es errónea y no cumple con la evaluación descrita en el
                 if con la función preg_match sobre los campos señalados anteriormente */
                 echo
@@ -214,7 +94,7 @@ class ContrlUsuario
                                 icon: "error",
                                 title: "Solo se permiten números en el campo NIP; en los campos Nombres y Apellidos, letras y vocales",
                             }).then((result)=>{
-                                window.location="usuario";
+                                window.location="perito";
                             }); 
                     </script>';
             }
@@ -223,13 +103,13 @@ class ContrlUsuario
 
     }
 
-    /*método para mostrar los usuarios*/
-    static public function controlerMostrarUsuarios($campo,$valor)
+    /*método para mostrar los peritos*/
+    static public function controlerMostrarPeritos($campo,$valor)
     {
-        /*tabla de usuarios*/
-        $tbl="VISTA_CRUD_USUARIO";
+        /*tabla de peritos*/
+        $tbl="VISTA_CRUD_PERITO";
 
-        $ans=ModelUsuario::MdlMostrarUsuario($tbl,$campo,$valor);
+        $ans=ModelPerito::mdlMostrarPerito($tbl,$campo,$valor);
 
         /*retornamos la respuesta a la vista */    
         return $ans;
@@ -238,7 +118,7 @@ class ContrlUsuario
 
 
 
-    static public function controlerEditarUsuario()
+    static public function controlerEditarPerito()
     {
         /*verifico si la variable post (nipEditar) de edicion
         contiene valores */
@@ -250,52 +130,18 @@ class ContrlUsuario
                preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["apellidoEditar"]) &&
                preg_match('/^[0-9]+$/',$_POST["nipEditar"]))
             {
-                /*vamos a validar si se va a actualizar la contraseña, se debe
-                encriptar de nuevo */
-                if($_POST["contraEditar"]!="")
-                {
-                    /*validamos que la contraseña actualiza solo traiga
-                    caracteres permitidos */
-                    if(preg_match('/^[a-zA-Z0-9ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["contraEditar"]))
-                    {
-                        $encrypt=crypt($_POST["contraEditar"],'$2a$07$lsijooasdljiwIQKTBQRwgrl$');
-                    }
-                    else
-                    {
-                        /*si el usuario ingresa caracteres no permitidos, le notificamos */
-                        echo
-                        '<script>
-                                swal.fire({
-                                    type:"error",
-                                    icon: "error",
-                                    title: "No se permite el uso de caracteres especiales o la contraseña está vacía",
-                                }).then((result)=>{
-                                    window.location="usuario";
-                                 }); 
-                        </script>';
-                    } 
-                }
-                else
-                {
-                    /*sino se actualiza la contraseña, guardamos la que 
-                    siempre ha tenido (la última que definió) */
-                    $encrypt=$_POST["contraActual"];
-                }
-                
                 /*con las validaciones anteriores, ya podré enviar
                 los campos actualizados al modelo */
                 $nuevaTupla=array("NIP"=> $_POST["nipEditar"],
                             "NOMBRES"=> $_POST["nombreEditar"],
                             "APELLIDOS"=> $_POST["apellidoEditar"],
-                            "ID_ROL_USUARIO"=> $_POST["rolEditar"],
-                            /*ENnvío ya la clave encriptada */
-                            "ACCESO"=> $encrypt,
-                            "NIP_ULT_USR_MODIFICADOR"=> $_SESSION["NIP"]
+                            "NIP_ULT_USR_MODIFICADOR"=> $_SESSION["NIP"],
+                            "ROL"=>$_SESSION["DESCRIPCION"]
                             );
                 /*solicitando  respuesta al modelo */
-                $ans=ModelUsuario::MdlEditarUsuario($nuevaTupla);
+                $ans=ModelPerito::mdlEditarPerito($nuevaTupla);
                 /*si la actualización se realizó con éxito, lanzo una 
-                notificación para informarle al usuario */
+                notificación para informarle al perito */
                 if($ans==true)
                 {
                     echo
@@ -308,7 +154,7 @@ class ContrlUsuario
                                     showConfirmButton: false,
                                     timer: 2000
                                 }).then((result)=>{
-                                    window.location="usuario";
+                                    window.location="perito";
                                 }); 
                     </script>';
 
@@ -321,7 +167,7 @@ class ContrlUsuario
                             icon: "error",
                             title: "'.$Ex->getMessage().'",
                         }).then((result)=>{
-                            window.location="usuario";
+                            window.location="perito";
                          }); 
                     </script>';
                 }
@@ -336,7 +182,7 @@ class ContrlUsuario
                                 icon: "error",
                                 title: "La contraseña debe incluir números y letras",
                             }).then((result)=>{
-                                window.location="usuario";
+                                window.location="perito";
                             }); 
                     </script>';
             }
@@ -344,16 +190,16 @@ class ContrlUsuario
     }
 
 
-    /*controler para borrar usuario (dar de baja)*/
-    static public function controlerBorrarUsuario()
+    /*controler para borrar perito (dar de baja)*/
+    static public function controlerBorrarPerito()
     {
-        /*verifico el id del usuario a eliminar (NIP) y
-        que el id del usuario responsable de la ejecución de  la acción
+        /*verifico el id del perito a eliminar (NIP) y
+        que el id del perito responsable de la ejecución de  la acción
         sean registrados*/
-        if(isset($_GET["id_Usuario_baja"]))
+        if(isset($_GET["id_Perito_baja"]))
         {
             /*solicitamos al modelo que ejecute la acción y envie respuesta */
-            $res=ModelUsuario::mdlBorrarUsuario($_GET["id_Usuario_baja"],$_GET["nip_Usuario_Responsable"]);
+            $res=ModelPerito::mdlBorrarPerito($_GET["id_Perito_baja"],$_GET["nip_Perito_Responsable"]);
             /*luego de obtener respuesta del modelo,
             verifico si la acción fue realizada con éxito */
             if($res==true)
@@ -364,11 +210,11 @@ class ContrlUsuario
                         Swal.fire({
                             position: "center",
                             icon: "success",
-                            title: "Usuario Eliminado Exitosamente",
+                            title: "Perito Eliminado Exitosamente",
                             showConfirmButton: false,
                             timer: 2000
                             }).then((result)=>{
-                                window.location="usuario";
+                                window.location="perito";
                             }); 
                         </script>';
 
@@ -381,23 +227,12 @@ class ContrlUsuario
                                 icon: "error",
                                 title: "'.$res->getMessage().'",
                             }).then((result)=>{
-                                window.location="usuario";
+                                window.location="perito";
                             }); 
                     </script>';
             }
         }
 
-    }
-
-    static public function controlerVerDatos()
-    {
-        if(isset($_SESSION["NIP"]))
-        {
-            $ans=ModelUsuario::mdlObtenerDatos();
-
-            return $ans;
-
-        }
     }
 
 }
