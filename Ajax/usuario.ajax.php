@@ -5,7 +5,7 @@ independiente de html, es decir, en segundo plano */
 require_once "../Controlador/usuario.controler.php";
 require_once "../Modelo/usuario.model.php";
 
-class AjaxUsuario
+class AjaxPerito
 {
     /*edición de usuario*/
     /*variable que tomará el valor

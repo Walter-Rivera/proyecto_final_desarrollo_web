@@ -1,6 +1,6 @@
 <?php
 
-class ContrlUsuario
+class ContrlPerito
 {
     static public function controlerUsuario()
     {
