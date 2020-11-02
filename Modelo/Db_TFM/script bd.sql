@@ -1427,3 +1427,86 @@ BEGIN
             ROLLBACK;
         END IF;
 END;
+
+
+
+
+/*procedimiento almacenado para la actualización de datos de una sección*/
+DROP PROCEDURE IF EXISTS PA_ACTUALIZAR_SECCION_SISTEMA; 
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZAR_SECCION_SISTEMA`(IN ID_SECCION_EDITAR INT, IN NOMBRES_SEC_EDITAR VARCHAR(100),
+IN IDENTIFICADOR_EDITAR VARCHAR(100),IN NIP_ULT_USR_MOD INT,IN NOMBRE_ROL_USR_RESP VARCHAR(100))
+BEGIN
+    /*variables para capturar los datos recuperados de la bd del perito
+    a través de un cursor*/
+    DECLARE C_ID_SECCION INT(10);
+    DECLARE C_NOMBRE VARCHAR(200);
+    DECLARE C_IDENTIFICADOR VARCHAR(200);
+    DECLARE C_ID_SECCION_ULT_USR_MODIFICADOR INT(10);
+    /*variable para cerrar el loop*/
+    DECLARE FIN_LOOP INTEGER DEFAULT 0;
+    /*creo un cursor para recuperar los datos del perito a actualizar (datos)*/
+    DECLARE CURSOR_SELECCION_SECCION CURSOR FOR
+    SELECT ID_SECCION,NOMBRE,IDENTIFICADOR,ULTIMO_USUARIO_MODIFICADOR
+    FROM SECCION WHERE ID_SECCION=ID_SECCION_EDITAR;
+
+    /*VARIABLE PARA CONTROLAR EL FINAL DE RECORRIDO DEL CURSOR*/
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIN_LOOP=1; 
+    /*excepción para hacer rolback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, SINO
+    EN alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20032' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de actualización de perito";
+    END;
+
+    START TRANSACTION;
+
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE EDITAR LA SECCIÓN ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            /*EVALUAMOS QUE EL ROL EXISTE EN LA BD*/
+            SET @NROL_USUARIO=(SELECT ID_ROL FROM ROL_USUARIO 
+            WHERE DESCRIPCION=NOMBRE_ROL_USR_RESP LIMIT 1);
+            /*SI EL ID DE ROL DE USUARIO SE ENCUENTRA en el de rol DE ADMIN*/ 
+            IF(@NROL_USUARIO IN(4)) THEN
+                /*abrimos el cursor*/
+                OPEN CURSOR_SELECCION_SECCION;
+                    CICLO: LOOP
+                    FETCH CURSOR_SELECCION_SECCION INTO C_ID_SECCION,C_NOMBRE, C_IDENTIFICADOR,
+                    C_ID_SECCION_ULT_USR_MODIFICADOR;
+                        /*comprobamos si llegamos al final de los registros obtenidos del cursor*/
+                        IF FIN_LOOP = 1 THEN
+                            LEAVE CICLO;
+                        END IF;
+                        /*HARÉ VALIDACIÓN DE CAMPO POR CAMPO PARA IDENTIFICAR SI VARIA EL VALOR ANTIGUO
+                        DE CADA UNO CON EL NUEVO ENVIADO POR EL USUARIO DESDE LA VISTA*/
+                        /*SI SE ACTUALIZA EL NOMBRE DE SECCION*/
+                        IF(NOMBRES_SEC_EDITAR<>C_NOMBRE) THEN
+                            UPDATE SECCION SET NOMBRE=NOMBRES_SEC_EDITAR WHERE ID_SECCION=ID_SECCION_EDITAR;
+                        END IF;
+                        /*SI EL IDENTIFICADOR ES ACTUALIZADO*/
+                        IF(IDENTIFICADOR_EDITAR<>C_IDENTIFICADOR) THEN
+                            UPDATE SECCION SET IDENTIFICADOR=IDENTIFICADOR_EDITAR WHERE ID_SECCION=ID_SECCION_EDITAR;
+                        END IF;
+                        /*DEBEMOS REGISTAR QUE USUARIO CON PRIVILEGIOS DE ADMIN 
+                        FUE EL ÚLITMO EN EDITAR A OTRO USUARIO*/
+                        IF(C_ID_SECCION_ULT_USR_MODIFICADOR<>NIP_ULT_USR_MOD) THEN
+                            UPDATE SECCION SET ULTIMO_USUARIO_MODIFICADOR=NIP_ULT_USR_MOD
+                            WHERE ID_SECCION=ID_SECCION_EDITAR;
+                        END IF;         
+                    END LOOP CICLO;
+                CLOSE CURSOR_SELECCION_SECCION;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20033' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+            ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20034' SET MESSAGE_TEXT = '¡USTED NO TIENE PRIVILEGIOS PARA RELIZAR ESTAS ACCIONES!';
+        END IF;    
+END// DELIMITER;
+
+
