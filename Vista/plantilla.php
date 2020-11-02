@@ -142,6 +142,8 @@
 <script type="text/javascript" src="Vista/js/plantilla.js"></script>
 <!--script para usuarios-->
 <script src="Vista/js/usuario.js"></script>
+<script src="Vista/js/perito.js"></script>
+
 
 
 
