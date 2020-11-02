@@ -93,19 +93,7 @@ el formulario para creación de un nuevo seccion-->
         <div class="modal-body">
           <!--creando caja para el contenidod del body-->
           <div class="box-body">
-            <!--div para insertar el NIP del seccion-->
-            <div class="form-group">
-
-
-              <!--este input group lo que permite es agrupar 
-              un ícono con los datos que ingrese el seccion-->
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-plus"></i></span>
-                <!--atributo de solo lectura para el NIP-->
-                <input class="form-control input-lg" type="text" name="idNuevo" placeholder="ingrese el NIP" required>
-              </div>
-            </div>
-          
+            
           
           
             <!--creando formulario (clases de bootstrap específicas para realizar formularios)
