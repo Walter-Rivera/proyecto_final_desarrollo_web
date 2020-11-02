@@ -15,7 +15,7 @@ class ContrlSeccion
         /*si se trea una variable tipo post
         y se está enviando por medio del formulario de creación de seccion
         en el front, puede ser cualquier variable del formulario*/
-        if(isset($_POST["idNuevo"]))
+        if(isset($_POST["nombreNuevo"]))
         {
             /*validamos la información contenida en las variables posts,
             con preg match lo que se hará es permitir que la contraseña
@@ -28,8 +28,7 @@ class ContrlSeccion
             /*en el caso de los nombres y apellidos vamos a validar 
             que solo se permitan caracteres, no números*/
             if(preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["nombreNuevo"]) &&
-               preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["identificadorNuevo"]) &&
-               preg_match('/^[0-9]+$/',$_POST["idNuevo"])) 
+               preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["identificadorNuevo"])) 
             {
                 /* coloco en un array los datos obtenidos del envío del 
                 formulario a través de las variables tipo $_POST*/
@@ -106,7 +105,7 @@ class ContrlSeccion
     static public function controlerMostrarSeccion($campo,$valor)
     {
         /*tabla de seccions*/
-        $tbl="VISTA_CRUD_PERITO";
+        $tbl="VISTA_CRUD_SECCION";
 
         $ans=ModelSeccion::mdlMostrarSeccion($tbl,$campo,$valor);
 
@@ -121,13 +120,13 @@ class ContrlSeccion
     {
         /*verifico si la variable post (nipEditar) de edicion
         contiene valores */
-        if(isset($_POST["nipEditar"]))
+        if(isset($_POST["idEditar"]))
         {
             /*vuelvo a hacer la validación de la entrada de caracteres
             que permito */
             if(preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["nombreEditar"]) &&
                preg_match('/^[a-zA-Z-ñÑáéíóúÁÉÍÓÚ ]+$/',$_POST["identificadorEditar"]) &&
-               preg_match('/^[0-9]+$/',$_POST["nipEditar"]))
+               preg_match('/^[0-9]+$/',$_POST["idEditar"]))
             {
                 /*con las validaciones anteriores, ya podré enviar
                 los campos actualizados al modelo */
@@ -192,7 +191,7 @@ class ContrlSeccion
     /*controler para borrar seccion (dar de baja)*/
     static public function controlerBorrarSeccion()
     {
-        /*verifico el id del seccion a eliminar (NIP) y
+        /*verifico el id del seccion a eliminar  y
         que el id del seccion responsable de la ejecución de  la acción
         sean registrados*/
         if(isset($_GET["id_seccion_baja"]))
