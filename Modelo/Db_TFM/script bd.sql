@@ -1547,4 +1547,44 @@ BEGIN
         END IF;    
 END// DELIMITER;
 
-select * from seccion;
+
+
+/*PROCEDIMIENTO ALMACENAOD PARA DAR DE BAJA A UNA SECCION DEL SISTEMA*/
+DROP PROCEDURE  IF EXISTS PA_BAJA_SEC_SISTEMA;
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_BAJA_SEC_SISTEMA`(IN ID_SECCION_FIJA INT,IN NIP_USR_RESP INT)
+BEGIN
+    /*Variable para determinar si el usuario que quiere hacer el UPDATE 
+    existe en la bd, y tiene rol de administrador*/
+    DECLARE VALIDAR_ROL INT;
+    /*Variable para recuperar el id del estado "baja"*/
+    DECLARE ID_ESTADO_BAJA INT;
+    /*excepción para hacer rolLback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, sino
+    en alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20035' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de BAJA DEL PERITO";
+    END;
+
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL PERITO QUE QUIERE CREAR OTRO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_USR_RESP));
+        IF(@PRIVILEGIOS=1) THEN
+            /*RECUPERO EL ID DEL ESTADO "BAJA" CON UNA FUNCIÓN*/
+            SET ID_ESTADO_BAJA=(SELECT FUNCT_DEVOLVER_ESTADO_SECC_BAJA());
+            IF(!ISNULL(ID_ESTADO_BAJA)) THEN
+                UPDATE SECCION SET ID_ESTADO_SECCION=ID_ESTADO_BAJA WHERE ID_SECCION=ID_SECCION_FIJA;
+                UPDATE SECCION SET ULTIMO_USUARIO_MODIFICADOR=NIP_USR_RESP WHERE ID_SECCION=ID_SECCION_FIJA;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20036' SET MESSAGE_TEXT = "OPCION INEXISTENTE AL QUERER ELIMINAR SECCION, COMÚNIQUESE CON EL DESARROLLADOR";
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20037' SET MESSAGE_TEXT="¡Usted no tiene privilegios para realizar esta acción!";
+        END IF;
+    END// DELIMITER;
+
