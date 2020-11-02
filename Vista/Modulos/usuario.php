@@ -67,7 +67,7 @@ permisos el usuario, lo redirecciona a la página de inicio*/
                 <th>Estado</th>
                 <th>Rol</th>
                 <th>Contraseña</th>
-                <th>Fecha Último Acceso</th>
+                <th>Fecha Ultima Modifación</th>
                 <th>Acciones</th>
               </tr>
               <!---->

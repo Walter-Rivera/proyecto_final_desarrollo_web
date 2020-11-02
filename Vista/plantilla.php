@@ -11,7 +11,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Almacén TFM</title>
+  <title>Gestiones TFM</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!--agregando el logo de la Institución-->
@@ -90,18 +90,11 @@
           /*comparamos con el nombre de los módulos que definimos si el parametro
           que trae el método GET es correcto */
           if($_GET["ruta"]=="ini"|| $_GET["ruta"]=="usuario"
-            || $_GET["ruta"]=="categoria" || $_GET["ruta"]=="producto"
-            || $_GET["ruta"]=="cliente" || $_GET["ruta"]=="distribucion_envio"
-            || $_GET["ruta"]=="aprovisionamiento_envio"
-            || $_GET["ruta"]=="crear_aprovisionamiento"
-            || $_GET["ruta"]=="sugerencia_aprovisionamiento"
-            || $_GET["ruta"]=="historial_aprovisionamiento"
-            || $_GET["ruta"]=="gestion_aprovisionamiento"
-            || $_GET["ruta"]=="gestion_distribucion"
-            || $_GET["ruta"]=="historial_distribucion"
-            || $_GET["ruta"]=="consumo_seccion" || $_GET["ruta"]=="top20_masconsumo"
-            || $_GET["ruta"]=="top10_menosconsumo" || $_GET["ruta"]=="consumo_cliente"
-            || $_GET["ruta"]=="salir" || $_GET["ruta"]=="proveedor")
+            || $_GET["ruta"]=="ampliacionesEvacuadas" || $_GET["ruta"]=="ampliacionesPendientes"
+            || $_GET["ruta"]=="dictamenesEvacuados" || $_GET["ruta"]=="dictamenesPendientes"
+            || $_GET["ruta"]=="dictamenesTranscritos" || $_GET["ruta"]=="gestion"
+            || $_GET["ruta"]=="perito" || $_GET["ruta"]=="seccion"
+            || $_GET["ruta"]=="tipoGestion")
             {
               /*vamos a incluir el modulo para ajustar la altura de nuestro 
               menu de inicio lateral y verlo de forma correcta*/
@@ -149,10 +142,7 @@
 <script type="text/javascript" src="Vista/js/plantilla.js"></script>
 <!--script para usuarios-->
 <script src="Vista/js/usuario.js"></script>
-<script src="Vista/js/proveedor.js"></script>
-<script src="Vista/js/categoria.js"></script>
-<script src="Vista/js/cliente.js"></script>
-<script src="Vista/js/producto.js"></script>
+
 
 
 
