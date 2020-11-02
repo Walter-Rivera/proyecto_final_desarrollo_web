@@ -1392,3 +1392,37 @@ END// DELIMITER;
 /********************************************************************************/
 
 
+/*******************************************************************************/
+                        /*PROCEDIMIENTOS ALMACENADOS CRUD PERITO */
+/*******************************************************************************/
+
+/*PROCEDIMIENTO ALMACENADO PARA LA CREACIÓN DE UNA SECCION*/
+DROP PROCEDURE IF EXISTS PA_CREAR_SECCION_SISTEMA;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_CREAR_SECCION_SISTEMA`(IN NOMBRE_NUEVO VARCHAR(100),IN IDENTIFICADOR_NUEVO VARCHAR(10),IN NIP_ULT_USR_MOD INT,IN NOMBRE_ROL_USR_RESP VARCHAR(100))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20029' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de creación de PERITO";
+    END;
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR AL PERITO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            
+                /*EVALUAMOS QUE EL ROL EXISTE EN LA BD Y EXTRAEMOS EL ID DE ESTE*/
+                SET @NROL_USUARIO_MOD=(SELECT ID_ROL FROM ROL_USUARIO
+                WHERE DESCRIPCION=NOMBRE_ROL_USR_RESP LIMIT 1);
+                /*SI EL ROL DE USUARIO ES ÚNICAMENTE ADMINISTRADOR*/ 
+                IF(@NROL_USUARIO_MOD IN(4)) THEN
+                    INSERT INTO SECCION(NOMBRE,IDENTIFICADOR,ULTIMO_USUARIO_MODIFICADOR) VALUES(NOMBRE_NUEVO,IDENTIFICADOR_NUEVO,NIP_ULT_USR_MOD);
+                ELSE
+                SIGNAL SQLSTATE '20030' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+                END IF;
+                COMMIT;
+        ELSE
+            SIGNAL SQLSTATE '20031' SET MESSAGE_TEXT='¡Usted no tiene privilegios de Administrador!';
+            ROLLBACK;
+        END IF;
+END;
