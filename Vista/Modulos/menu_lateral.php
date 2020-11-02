@@ -17,30 +17,32 @@
                             <i class="fa fa-user"></i>
                             <span>Usuarios</span>
                         </a>
-                    </li>';
-            }
-            if($_SESSION["DESCRIPCION"]=="ADMINISTRADOR" || $_SESSION["DESCRIPCION"]=="AUXILIAR_ADMINISTRATIVO")
-            {
-            echo'<li>
+                    </li>
+                    <li>
                     <a href="perito">
                         <i class="fa fa-user-md"></i>
                         <span>Peritos</span>
                     </a>
-                </li>
-                <li>
-                    <a href="seccion">
-                        <i class="fa fa-list-ol"></i>
-                        <span>Seccion</span>
-                    </a>
-                </li>
-                <li>
-                    <a href="tipoGestion">
-                        <i class="fa fa-cogs"></i>
-                        <span>Tipos de Gestiones</span>
-                    </a>
-                </li>';
+                    </li>
+                    <li>
+                        <a href="seccion">
+                            <i class="fa fa-list-ol"></i>
+                            <span>Seccion</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="tipoGestion">
+                            <i class="fa fa-cogs"></i>
+                            <span>Tipos de Gestiones</span>
+                        </a>
+                    </li>';
             }
-
+            echo'<li>
+                     <a href="gestion">
+                        <i class="fa fa-plus-square"></i>
+                        <span>Registrar Datos</span>
+                     </a>
+                </li>';
 
             echo'<li class="treeview">
                 <a href="#"> 

@@ -94,7 +94,7 @@
             || $_GET["ruta"]=="dictamenesEvacuados" || $_GET["ruta"]=="dictamenesPendientes"
             || $_GET["ruta"]=="dictamenesTranscritos" || $_GET["ruta"]=="gestion"
             || $_GET["ruta"]=="perito" || $_GET["ruta"]=="seccion"
-            || $_GET["ruta"]=="tipoGestion")
+            || $_GET["ruta"]=="tipoGestion" || $_GET["ruta"]=="salir")
             {
               /*vamos a incluir el modulo para ajustar la altura de nuestro 
               menu de inicio lateral y verlo de forma correcta*/

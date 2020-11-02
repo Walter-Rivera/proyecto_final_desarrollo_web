@@ -13,7 +13,7 @@
     <!-- /.login-logo -->
     <div class="login-box-body">
         <strong>
-            <p class="login-box-msg">Sistema de Aprovisionamiento, distribución de productos y Reportes De Almacén TFM</p>
+            <p class="login-box-msg">Sistema Gestión de Peritajes y oficios TFM</p>
         </strong>
 
         <form method="post">
