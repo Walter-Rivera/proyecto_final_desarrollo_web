@@ -66,7 +66,7 @@ $(".VtSeccions tbody").on("click","button.botonEditarSeccion",function()
     que vamos a editar y mostrarlos en el modal,
     se creará un archivo en la en la carpeta ajax con este fin */
     $.ajax({
-        url:"Ajax/perito.ajax.php",
+        url:"Ajax/seccion.ajax.php",
         method: "POST",
         data: info,
         cache: false,
@@ -76,9 +76,9 @@ $(".VtSeccions tbody").on("click","button.botonEditarSeccion",function()
         success: function (contenido){
             /*mostar el contenido recuperado de la bd
             en los inputs del modal*/
-           document.querySelector('#nipEditar').value=contenido["NIP"];
-           document.querySelector('#nombreEditar').value=contenido["NOMBRES"];
-           document.querySelector('#apellidoEditar').value=contenido["APELLIDOS"];
+           document.querySelector('#idEditar').value=contenido["ID"];
+           document.querySelector('#nombreEditar').value=contenido["NOMBRE"];
+           document.querySelector('#identificadorEditar').value=contenido["IDENTIFICADOR"];
            
         },
     });
@@ -86,95 +86,14 @@ $(".VtSeccions tbody").on("click","button.botonEditarSeccion",function()
 );
 
 
-/*evento para detectar cuando se presione el cambio de estado de un perito*/
-$(".VtSeccions tbody").on("click","button.botonActivarPer",function(){
-
-    /*tomando el valor del atributo para capturar el NIP del perito responsable en modificar */
-    var nip_perito_Responsable=$(this).attr("RESPON");
-    /*tomando el valor del atributo para capturar el NIP del perito a modificar*/
-    var NIPper=$(this).attr("NIPper");
-    /*tomando el valor del atributo para capturar el estado del perito en el sistema
-    1-activo
-    2-inactivo */
-    var estadoPer=$(this).attr("estadoPer");
-    /*creamos un formulario de datos para luego trabajarlo en ajax */
-    var informacion=new FormData(); 
-    /*agregamos los valores de las variables de stado y id perito */
-    informacion.append("NIPper",NIPper);
-    informacion.append("estadoPer",estadoPer);
-    informacion.append("RESPON",nip_perito_Responsable)
-    //console.log(NIPper);
-    //console.log(estadoperito);
-    /*petición ajax para la actualización de estado */
-    $.ajax({
-        url:"Ajax/perito.ajax.php",
-        method: "POST",
-        data: informacion,
-        cache: false,
-        contentType: false,
-        processData: false,
-        dataType: "json",
-       /* beforeSend:function()
-        {
-            console.log(informacion.get("RESPON")+" RESPONSABLE peticion antes de envio");
-            console.log(informacion.get("ID_PROV")+" NIP peticion antes de envio");
-            console.log(informacion.get("estadoProv")+" ESTADO proveedor peticion antes de envio");
-
-        },*/
-        success: function(ans){
-            swal.fire({
-                type:"success",
-                icon: "success",
-                title: "Estado Actualizado exitosamente",
-                showConfirmButton: false,
-                timer: 2000
-            }).then((result)=>{
-                window.location="perito";
-             });
-            
-        },
-        error: function(xhr,status){
-            swal.fire({
-                type:"error",
-                icon: "error",
-                title: "¡Usted no tiene privilegios!",
-                showConfirmButton: false,
-                timer: 2000
-            }).then((result)=>{
-                    window.location="perito";
-            });
-        }
-    
-    });
-    /*luego de la actualización del estado, cambiamos las propiedades 
-                del botón, según sea su condición 2=inactivo */
-    if(estadoPer==4)
-    {
-        $(this).removeClass('btn-success');
-        $(this).addClass('btn-danger');
-        $(this).html('Inactivo');
-        $(this).attr('estadoPer',5);
-        console.log(estadoPer+"rojo");
-    }
-    else
-    {
-        /*si es todo lo contrario*/
-        $(this).addClass('btn-success');
-        $(this).removeClass('btn-danger');
-        $(this).html('Activo');
-        $(this).attr('estadoPer',4);   
-    }
-});
-
-
 /*dar de baja un perito del sistema*/
 
 $(".VtSeccions tbody").on("click","button.botonEliminarSeccion",function(){
 
 /*tomando el valor del atributo para capturar el NIP del perito responsable en dar de baja del sistema */
-var nip_perito_Responsable=$(this).attr("RESPON");
+var nip_seccion_Responsable=$(this).attr("RESPON");
 /*id del perito a dar de baja del sistema*/
-var id_perito_baja=$(this).attr("nipBorrarSeccion");
+var id_seccion_baja=$(this).attr("idBorrarSeccion");
 
     /*alerta suave para confirmar la baja del perito en el sistema*/
     swal.fire({
@@ -191,7 +110,7 @@ var id_perito_baja=$(this).attr("nipBorrarSeccion");
             {
                 /*redirecciono a la pagina perito, envio por get el id del perito a eliminar y
                 el responsable en realizar el proceso */
-                window.location="index.php?ruta=perito&id_perito_baja="+id_perito_baja+"&nip_perito_Responsable="+nip_perito_Responsable;
+                window.location="index.php?ruta=perito&id_seccion_baja="+id_seccion_baja+"&nip_seccion_Responsable="+nip_seccion_Responsable;
             }
         })
     });

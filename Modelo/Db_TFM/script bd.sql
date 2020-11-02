@@ -1412,6 +1412,19 @@ END// DELIMITER;
 /********************************************************************************/
 
 /*********************************************************************************/
+                                        /*VISTA CRUD SECCION*/
+/********************************************************************************/
+USE TFM;
+DROP VIEW IF EXISTS VISTA_CRUD_SECCION;
+DELIMITER //
+CREATE VIEW VISTA_CRUD_SECCION
+(ID,NOMBRES,IDENTIFICADOR,ESTADO_SECCION)
+AS
+(SELECT SEC.ID_SECCION,SEC.NOMBRE,SEC.IDENTIFICADOR,ES.NOMBRE AS ESTADO_SECCION FROM SECCION SEC
+INNER JOIN ESTADO_SECCION ES ON SEC.ID_ESTADO_SECCION=ES.ID_ESTADO_SECCION AND ES.NOMBRE<>'BAJA');
+// DELIMITER;
+
+/*********************************************************************************/
                                         /*FUNCIONES CRUD SECCION*/
 /********************************************************************************/
 
