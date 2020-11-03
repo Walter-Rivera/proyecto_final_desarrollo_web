@@ -143,6 +143,8 @@
 <script src="Vista/js/usuario.js"></script>
 <script src="Vista/js/perito.js"></script>
 <script src="Vista/js/seccion.js"></script>
+<script src="Vista/js/tipoGestion.js"></script>
+
 
 
 

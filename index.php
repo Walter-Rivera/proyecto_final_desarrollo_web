@@ -8,6 +8,8 @@
     require_once "Controlador/usuario.controler.php";
     require_once "Controlador/perito.controler.php";
     require_once "Controlador/seccion.controler.php";
+    require_once "Controlador/tipoGestion.controler.php";
+
     
 
 
@@ -19,6 +21,8 @@
      require_once "Modelo/usuario.model.php";
      require_once "Modelo/perito.model.php";
      require_once "Modelo/seccion.model.php";
+     require_once "Modelo/tipoGestion.model.php";
+
 
 
     
