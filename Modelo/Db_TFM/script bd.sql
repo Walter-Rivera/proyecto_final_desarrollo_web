@@ -329,7 +329,7 @@ CREATE TABLE GESTION
     IMAGEN_ARCHIVO BLOB,
     ULTIMO_USUARIO_MODIFICADOR INT(6)
 );
-ALTER TABLE GESTION ADD CONSTRAINT PK_GEST PRIMARY KEY(CORRELATIVO,ANIO);
+ALTER TABLE GESTION ADD CONSTRAINT PK_GEST PRIMARY KEY(ID_SECCION,ANIO,CORRELATIVO);
 ALTER TABLE GESTION ADD CONSTRAINT FK_IDSEC FOREIGN KEY(ID_SECCION)
 REFERENCES SECCION(ID_SECCION);
 ALTER TABLE GESTION ADD CONSTRAINT FK_IDPRESP FOREIGN KEY(ID_PERITO_RESPONSABLE)
@@ -344,6 +344,7 @@ ALTER TABLE GESTION ADD CONSTRAINT FK_USRMODIFICADOR FOREIGN KEY(ULTIMO_USUARIO_
 REFERENCES USUARIO_SISTEMA(ID_USUARIO);
 
 
+/*ALTER TABLE GESTION DROP FOREIGN KEY FK_IDSEC*/;
 
 /*A Continuación la tabla que jugará el papel de 
 bitácora en el sistema para garantizar el no repudio 
@@ -352,8 +353,9 @@ de operaciones por parte de los usuarios del sistema
 CREATE TABLE BITACORA_GESTION
 (
     ID_TRANSACCION INT(6),
-    CORRELATIVO_AFECTADO INT(6),
+    ID_SECCION_AFECTADO INT(3),
     ANIO INT(4),
+    CORRELATIVO_AFECTADO INT(6),
     ID_TIPO_MOV INT(3),
     ID_CAMPO_AFECTADO INT(3),
     FECHA_MOVIMIENTO TIMESTAMP,
@@ -362,15 +364,14 @@ CREATE TABLE BITACORA_GESTION
     VALOR_NUEVO VARCHAR(100)
 );
 ALTER TABLE BITACORA_GESTION ADD CONSTRAINT PK_BG PRIMARY KEY(ID_TRANSACCION);
-ALTER TABLE BITACORA_GESTION ADD CONSTRAINT FK_GEST FOREIGN KEY(CORRELATIVO_AFECTADO,ANIO)
-REFERENCES GESTION(CORRELATIVO,ANIO);
+ALTER TABLE BITACORA_GESTION ADD CONSTRAINT FK_GEST FOREIGN KEY(ID_SECCION_AFECTADO,ANIO,CORRELATIVO_AFECTADO)
+REFERENCES GESTION(ID_SECCION,ANIO,CORRELATIVO);
 ALTER TABLE BITACORA_GESTION ADD CONSTRAINT FK_ITM FOREIGN KEY(ID_TIPO_MOV)
 REFERENCES TIPO_MOVIMIENTO_GESTION(ID_TIPO_MOV);
 ALTER TABLE BITACORA_GESTION ADD CONSTRAINT FK_ICA FOREIGN KEY(ID_CAMPO_AFECTADO)
 REFERENCES CAMPO_AFECTADO_GESTION(ID_CAMPO);
-ALTER TABLE BITACORA_GESTION ADD CONSTRAINT FK_IUR FOREIGN KEY(ID_USUARIO_RESP)
-REFERENCES USUARIO_SISTEMA(ID_USUARIO);
 
+drop table bitacora_gestion;
 
 
 
@@ -2201,8 +2202,8 @@ RETURNS INT(03)
 BEGIN 
     /*variable para guardar el resultado del count, si devuelve 1 quiere decir que la gestión ya existe*/
     DECLARE RESULTADO_EVALUACION INT(03);
-    SET RESULTADO_EVALUACION=(SELECT COUNT(*) FROM VISTA_VERIFICACION_GESTION G WHERE G.CORRELATIVO=CORRELATIVO_VERIFICAR
-     AND G.ANIO=ANIO_VERIFICAR AND G.SECCION=ID_SECCION_VERIFICAR);
+    SET RESULTADO_EVALUACION=(SELECT COUNT(*) FROM VISTA_VERIFICACION_GESTION G WHERE G.ANIO=ANIO_VERIFICAR AND G.CORRELATIVO=CORRELATIVO_VERIFICAR
+      AND G.SECCION=ID_SECCION_VERIFICAR);
     IF(RESULTADO_EVALUACION>0) THEN
         RETURN 0;
     ELSE
@@ -2423,6 +2424,204 @@ NOMBRE_TIPO_GESTION VARCHAR(100),IN NOMBRE_RESPONSABLE_GESTION_NUEVO VARCHAR(200
 IN OBSERVACIONES_NUEVO VARCHAR(600),IN ULTIMO_USUARIO_MODIFICADOR_NUEVO INT)
 
 
-call PA_CREAR_GESTION('PCEN',2020,451,'ROSITA CANALES','31/03/2020','NECROPSIA','Walter Giovanni Rivera López','tiene toxi',1751);
+call PA_CREAR_GESTION('PCEN',2020,455,'ROSITA CANALES','31/03/2020','NECROPSIA','Walter Giovanni Rivera López','',1751);
 */
 
+
+
+
+/*CREACION DE GESTION: RECIBIRÉ POR PARTE DEL USUARIO FINAL
+LOS SIGUIENTES PARÁMETROS: SECCION(ACRÓNIMO),ANIO,CORRELATIVO,PERITO_RESPONSABLE,FECHA_INGRESO,TIPO_GESTION*/
+DROP PROCEDURE IF EXISTS PA_EDITAR_GESTION;
+DELIMITER //
+CREATE PROCEDURE PA_EDITAR_GESTION(IN IDENTIFICADOR_SECCION_EDITAR VARCHAR(10),IN ANIO_EDITAR INT,
+IN CORRELATIVO_EDITAR INT,IN NOMBRE_PERITO_RESPONSABLE_EDITAR VARCHAR(200),IN FECHA_INGRESO VARCHAR(20),
+IN FECHA_TRANSCRIPCION_EDITAR VARCHAR(20),IN FECHA_ENTREGA_EDITAR VARCHAR(20),IN NOMBRE_ESTADO_GESTION VARCHAR(100),
+IN NOMBRE_TIPO_GESTION VARCHAR(100),IN NOMBRE_RESPONSABLE_GESTION_EDITAR VARCHAR(200),
+IN OBSERVACIONES_EDITAR VARCHAR(600),IN ULTIMO_USUARIO_MODIFICADOR_EDITAR INT)
+BEGIN
+    /*variables para manipular los datos*/
+    DECLARE ID_SECCIONES INT(03);
+    /*variable para recuperar el id, según su nombre completo*/
+    DECLARE ID_PERITOS INT(06);
+    /*variable para hacer validaciones a la fecha de ingreso, convertirla a tipo date*/
+    DECLARE DATO_FECHA_INGRESO DATE;
+    /*variable para hacer validacioens a la fecha de transcripcion, convertrila a tipo date*/
+    DECLARE DATO_FECHA_TRANSCRIPCION DATE;
+    /*variable para hacer validaciones a la fecha de egreso*/
+    DECLARE DATO_FECHA_EGRESO DATE;
+    /*Variable para extraer el id del tipo de gestion*/
+    DECLARE ID_TIPO_GESTIONES INT(03);
+    /*Variable para recuperar el id_usuario (NIP) del responsable de la gesiton, debe
+    ser un usuario del sistema, en base a sus nombres y apellidos*/
+    DECLARE ID_GESTOR INT(06);
+    /*Variable para capturar el id del estado de la gestion a actualizar*/
+    DECLARE ESTADO_OPR INT(03);
+
+    /*VARIABLES PARA CURSOR*/
+     /*variables para capturar los datos recuperados de la bd del usuario
+    a través de un cursor*/
+    DECLARE C_CORRELATIVO INT(06);
+    DECLARE C_ANIO INT(4);
+    DECLARE C_ID_SECCION INT(3);
+    DECLARE C_ID_PERITO_RESPONSABLE INT(6);
+    DECLARE C_FECHA_INGRESO DATE;
+    DECLARE C_FECHA_TRANSCRIPCION DATE;
+    DECLARE C_FECHA_EGRESO DATE;
+    DECLARE C_ID_ESTADO_GESTION INT(3);
+    DECLARE C_ID_TIPO_GESTION INT(3);
+    DECLARE C_RESPONSABLE_GESTION INT(6);
+    DECLARE C_OBSERVACIONES VARCHAR(600);
+    DECLARE C_ULTIMO_USUARIO_MODIFICADOR INT(6);
+
+    /*variable para cerrar el loop*/
+    DECLARE FIN_LOOP INTEGER DEFAULT 0;
+
+    /*creo un cursor para recuperar los datos del usuario a actualizar (datos)*/
+    DECLARE CURSOR_SELECCION_GESTION CURSOR FOR
+    SELECT CORRELATIVO,ANIO,ID_SECCION,ID_PERITO_RESPONSABLE,FECHA_INGRESO,FECHA_TRANSCRIPCION,
+    FECHA_EGRESO,ID_ESTADO_GESTION,ID_TIPO_GESTION,RESPONSABLE_GESTION,OBSERVACIONES,ULTIMO_USUARIO_MODIFICADOR
+    FROM GESTION WHERE ANIO=ANIO_EDITAR AND CORRELATIVO=CORRELATIVO_EDITAR;
+    /*VARIABLE PARA CONTROLAR EL FINAL DE RECORRIDO DEL CURSOR*/
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIN_LOOP=1; 
+
+
+    START TRANSACTION;
+        /*1.-Recupero el id de la seccion en base al identificador que me envien como parámetro*/
+    SET ID_SECCIONES=(SELECT FUNCT_OBTENER_ID_SECCION(IDENTIFICADOR_SECCION_EDITAR));
+        /*SI NOS DEVUELVE UN ID DE SECCION DENTRO DE LOS PERMITIDOS*/
+        IF(ID_SECCIONES>0) THEN
+            /*valido que el año de la gestión sea igual al cual va iniciar a funcionar el sistema en adelante,
+            es decir, tendrá que ser mayor o igual a 2020, si me mandan decimales, redondeo el numero
+            al entero SIN APROXIMAR*/
+            IF(SELECT FLOOR(ANIO_EDITAR)>=2020) THEN
+                /*VALIDO QUE EL CORRELATIVO QUE ME INGRESEN, SEA MAYOR A 0 DE LO CONTRARIO NOTIFICARÁ EL ERROR*/
+                IF(FLOOR(CORRELATIVO_EDITAR)>0) THEN
+                        /*RETORNAR EL ID DEL PERITO A CARGO DE LA GESTION*/
+                        SET ID_PERITOS=(SELECT FUNCT_EXTRAER_ID_PERITO(NOMBRE_PERITO_RESPONSABLE_EDITAR));
+                        /*SI SE EXTRAJO CORRECTAMENTE EL ID DEL PERITO*/
+                        IF(ID_PERITOS>0) THEN
+                            /*VALIDO LA FECHA DE INGRESO QUE TENGA EL FORMATO CORRECTO,DEBO CONVERTIRLA
+                            A FORMATO DATE, EL FORMATO QUE TIENE QUE VENIR ES DE DIA/MES/AÑO */
+                            SET DATO_FECHA_INGRESO= STR_TO_DATE(REPLACE(FECHA_INGRESO,'/','-') ,'%d-%m-%Y');
+                            /*VERIFICO SI EL AÑO DE LA FECHA ES MAYOR O IGUAL 2020 PARA CONTINUAR CON EL PROCESO*/
+                            IF(SELECT YEAR(DATO_FECHA_INGRESO)>=2020) THEN
+                                /*SE DEBE EXTARE EL ID DEL TIPO DE GESTION PARA HACER EL INSERT*/
+                                SET ID_TIPO_GESTIONES=(SELECT FUNCT_EXTRAER_ID_TP_GESTION(NOMBRE_TIPO_GESTION));
+                                IF(ID_TIPO_GESTIONES>0) THEN
+                                    /*EXTRAER EL ID DEL USUARIO RESPONSABLE DE TRANSCRIBIR DICTAMEN O ENTREGAR OFICIO(SI APLICA)*/
+                                        SET ID_GESTOR=(SELECT FUNCT_EXTRAER_ID_USUARIORESP(NOMBRE_RESPONSABLE_GESTION_EDITAR));
+                                        IF(ID_GESTOR>0) THEN
+                                            /*EXTRAIGO EL ID DEL ESTADO DE LA OPERACION A REALIZAR*/
+                                                SET ESTADO_OPR=(SELECT FUNCT_EXTRAER_ID_ESTADO_GESTION(NOMBRE_ESTADO_GESTION));
+                                                IF(ESTADO_OPR>0) THEN
+                                                    /*PROCEDO A HACER LAS VALIDACIONES PARA ACTUALIZACION*/
+                                                    /*abrimos el cursor*/
+                                                    OPEN CURSOR_SELECCION_GESTION;
+                                                        CICLO: LOOP
+                                                        FETCH CURSOR_SELECCION_GESTION INTO C_CORRELATIVO,C_ANIO, C_ID_SECCION,
+                                                        C_ID_PERITO_RESPONSABLE,C_FECHA_INGRESO,C_FECHA_TRANSCRIPCION,C_FECHA_EGRESO,
+                                                        C_ID_ESTADO_GESTION,C_ID_TIPO_GESTION,C_RESPONSABLE_GESTION,C_OBSERVACIONES,
+                                                        C_ULTIMO_USUARIO_MODIFICADOR;
+                                                            /*comprobamos si llegamos al final de los registros obtenidos del cursor*/
+                                                            IF FIN_LOOP = 1 THEN
+                                                                LEAVE CICLO;
+                                                            END IF;
+                                                            /*HARÉ VALIDACIÓN DE CAMPO POR CAMPO PARA IDENTIFICAR SI VARIA EL VALOR ANTIGUO
+                                                            DE CADA UNO CON EL EDITAR ENVIADO POR EL USUARIO DESDE LA VISTA*/
+                                                            /*NO SE PERMITIRÁ LA MODIFICACIÓN DE LA SECCION,ANIO Y CORRELATIVO,
+                                                            PORQUE SON NUESTRAS LLAVES PRIMARIAS*/
+                                                            /*SI EL NOMBRE DEL PERITO RESPONSABLE ES CAMBIADO*/
+                                                            IF(C_ID_PERITO_RESPONSABLE<>ID_PERITOS)THEN
+                                                                UPDATE GESTION SET ID_PERITO_RESPONSABLE=ID_PERITOS WHERE ANIO=ANIO_EDITAR
+                                                                AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                            /*SI LA FECHA DE INGRESO ES CAMBIADA*/
+                                                            IF(C_FECHA_INGRESO<>DATO_FECHA_INGRESO) THEN
+                                                                UPDATE GESTION SET FECHA_INGRESO=DATO_FECHA_INGRESO WHERE ANIO=ANIO_EDITAR
+                                                                AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                            
+                                                            /*SI EL ESTADO DE LA GESTION FUE MODIFICADO*/
+                                                            IF(C_ID_ESTADO_GESTION<>ESTADO_OPR) THEN
+                                                                UPDATE GESTION SET ID_ESTADO_GESTION=ESTADO_OPR WHERE ANIO=ANIO_EDITAR
+                                                                AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                            /*SI EL TIPO DE GESTION ES MODIFICADO*/
+                                                            IF(C_ID_TIPO_GESTION<>ID_TIPO_GESTIONES)THEN
+                                                                UPDATE GESTION SET ID_TIPO_GESTION=ID_TIPO_GESTIONES WHERE ANIO=ANIO_EDITAR
+                                                                AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                            /*SI EL RESPONSABLE DE LA GESTION ES CAMBIADO*/
+                                                            IF(C_RESPONSABLE_GESTION<>ID_GESTOR)THEN
+                                                                UPDATE GESTION SET RESPONSABLE_GESTION=ID_GESTOR WHERE ANIO=ANIO_EDITAR
+                                                                AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                            /*SI LAS OBSERVACIONES CAMBIAN*/
+                                                            IF(C_OBSERVACIONES<>OBSERVACIONES_EDITAR)THEN
+                                                                UPDATE GESTION SET OBSERVACIONES=OBSERVACIONES_EDITAR WHERE ANIO=ANIO_EDITAR
+                                                                AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                            /*SI EL USUARIO MODIFICADOR CAMBIA*/
+                                                            IF(C_ULTIMO_USUARIO_MODIFICADOR<>ULTIMO_USUARIO_MODIFICADOR_EDITAR)THEN
+                                                                UPDATE GESTION SET ULTIMO_USUARIO_MODIFICADOR=ULTIMO_USUARIO_MODIFICADOR_EDITAR
+                                                                WHERE ANIO=ANIO_EDITAR AND CORRELATIVO=CORRELATIVO_EDITAR
+                                                                AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+
+                                                            /*SI NOS TRAE VALORES, CONVERTIMOS EL STRING EN FORMATO DE FECHA*/
+                                                            /*VALIDO LA FECHA DE INGRESO QUE TENGA EL FORMATO CORRECTO,DEBO CONVERTIRLA
+                                                            A FORMATO DATE, EL FORMATO QUE TIENE QUE VENIR ES DE DIA/MES/AÑO */
+                                                            SET DATO_FECHA_TRANSCRIPCION= STR_TO_DATE(REPLACE(FECHA_TRANSCRIPCION_EDITAR,'/','-') ,'%d-%m-%Y');
+                                                            /*VERIFICO SI EL AÑO DE LA FECHA ES MAYOR O IGUAL 2020 PARA CONTINUAR CON EL PROCESO*/
+                                                            IF(SELECT YEAR(DATO_FECHA_TRANSCRIPCION)>=2020) THEN
+                                                                    UPDATE GESTION SET FECHA_TRANSCRIPCION=DATO_FECHA_TRANSCRIPCION WHERE ANIO=ANIO_EDITAR
+                                                                    AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            ELSE
+                                                                SIGNAL SQLSTATE '20110' SET MESSAGE_TEXT="FORMATO DE FECHA DE TRANSCRIPCION INCORRECTO O AÑO MENOR A 2020";
+                                                            END IF;
+
+                                                            /*QUIERE DECIR QUE TRAE DATOS, LOS CONVERTIMOS A FORMATO DE FECHA*/
+                                                            SET DATO_FECHA_EGRESO= STR_TO_DATE(REPLACE(FECHA_ENTREGA_EDITAR,'/','-') ,'%d-%m-%Y');
+                                                            /*VERIFICO SI EL AÑO DE LA FECHA ES MAYOR O IGUAL 2020 PARA CONTINUAR CON EL PROCESO*/
+                                                            IF(SELECT YEAR(DATO_FECHA_EGRESO)>=2020) THEN
+                                                                    UPDATE GESTION SET FECHA_EGRESO=DATO_FECHA_EGRESO WHERE ANIO=ANIO_EDITAR
+                                                                    AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            END IF;
+                                                        END LOOP CICLO;
+                                                    CLOSE CURSOR_SELECCION_GESTION;
+                                                    /*SE CONFIRMAN LAS TRANSACCIONES*/
+                                                     COMMIT;
+                                                ELSE
+                                                    SIGNAL SQLSTATE '20104' SET MESSAGE_TEXT="SECCION INEXISTENTE O DUPLICADA, CONTACTE AL DESARROLLADOR";
+
+                                                END IF;    
+                                        ELSE
+                                            SIGNAL SQLSTATE '20103' SET MESSAGE_TEXT="EL USUARIO RESPONSABLE NO ESTÁ DISPONIBLE, CONTACTE AL DESARROLLADOR";
+                                            ROLLBACK;
+                                        END IF;
+                                ELSE
+                                    SIGNAL SQLSTATE '20102' SET MESSAGE_TEXT="COMUNÍQUESE CON EL DESARROLLADOR,EL TIPO DE GESTION NO EXISTE";
+                                    ROLLBACK;
+                                END IF;
+                            END IF;
+                        ELSE
+                            SIGNAL SQLSTATE '20101' SET MESSAGE_TEXT="ERROR AL EXTRAER EL ID_PERITO, CONTACTE AL DESARROLLADOR";
+                            ROLLBACK;
+                        END IF;       
+                ELSE
+                    SIGNAL SQLSTATE '20099' SET MESSAGE_TEXT="DEBE INGRESAR ÚNICAMENTE NÚMEROS ENTEROS";
+                    ROLLBACK;
+                END IF;
+            ELSE 
+                /*le notifico al usuario que está ingresando un año no permitido*/
+                SIGNAL SQLSTATE '20105' SET MESSAGE_TEXT="EL AÑO NO PUEDE SER MENOR A 2020, pues a partir de este inició
+                a funcionar el sistema, solo se permiten números en ese rango";
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20106' SET MESSAGE_TEXT="Algo salió mal, contacte al desarrollador";
+            ROLLBACK;
+        END IF;
+END;
+// DELIMITER;
