@@ -2299,6 +2299,27 @@ BEGIN
 END// DELIMITER;
 
 
+/* FUNCION PARA EXTRAER EL ID DE ESTADO DE LA GESTION*/
+DROP FUNCTION IF EXISTS FUNCT_EXTRAER_ID_ESTADO_GESTION;
+DELIMITER //
+CREATE FUNCTION FUNCT_EXTRAER_ID_ESTADO_GESTION(NOMBRE_ESTADO_GESTION VARCHAR(100)) RETURNS INT(03)
+BEGIN 
+    /*variable para almacenar el resultado de la consulta, vamos a tomar el id del estado de gestion*/
+    DECLARE TOMAR_ID_ESTADO_GESTION INT(03);
+    /*BUSCO EL ID QUE COINCIDA CON EL NOMBRE DE ESTADO DE GESTION*/
+    SET TOMAR_ID_ESTADO_GESTION=(SELECT ID_ESTADO_GESTION FROM ESTADO_GESTION WHERE NOMBRE=NOMBRE_ESTADO_GESTION LIMIT 1);
+    IF(TOMAR_ID_ESTADO_GESTION>0) THEN
+        RETURN TOMAR_ID_ESTADO_GESTION;
+    ELSE
+        SIGNAL SQLSTATE '20098' SET MESSAGE_TEXT="No existe un estado con la descripcion dada, contacte al desarrollador";
+    END IF;
+
+END;
+// DELIMITER;
+
+
+
+
 
 
 
@@ -2579,6 +2600,7 @@ BEGIN
                                                                     AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
                                                             ELSE
                                                                 SIGNAL SQLSTATE '20110' SET MESSAGE_TEXT="FORMATO DE FECHA DE TRANSCRIPCION INCORRECTO O AÑO MENOR A 2020";
+                                                                ROLLBACK;
                                                             END IF;
 
                                                             /*QUIERE DECIR QUE TRAE DATOS, LOS CONVERTIMOS A FORMATO DE FECHA*/
@@ -2587,6 +2609,9 @@ BEGIN
                                                             IF(SELECT YEAR(DATO_FECHA_EGRESO)>=2020) THEN
                                                                     UPDATE GESTION SET FECHA_EGRESO=DATO_FECHA_EGRESO WHERE ANIO=ANIO_EDITAR
                                                                     AND CORRELATIVO=CORRELATIVO_EDITAR AND ID_SECCION=ID_SECCIONES;
+                                                            ELSE
+                                                                SIGNAL SQLSTATE '20111' SET MESSAGE_TEXT="FORMATO DE FECHA DE evacuacion/firma/ INCORRECTO O AÑO MENOR A 2020";
+                                                                ROLLBACK;
                                                             END IF;
                                                         END LOOP CICLO;
                                                     CLOSE CURSOR_SELECCION_GESTION;
@@ -2594,7 +2619,7 @@ BEGIN
                                                      COMMIT;
                                                 ELSE
                                                     SIGNAL SQLSTATE '20104' SET MESSAGE_TEXT="SECCION INEXISTENTE O DUPLICADA, CONTACTE AL DESARROLLADOR";
-
+                                                    ROLLBACK;
                                                 END IF;    
                                         ELSE
                                             SIGNAL SQLSTATE '20103' SET MESSAGE_TEXT="EL USUARIO RESPONSABLE NO ESTÁ DISPONIBLE, CONTACTE AL DESARROLLADOR";
