@@ -2187,16 +2187,6 @@ CREATE VIEW VISTA_UNIFICACION_DATOS_USUARIORESP
 
 
 
-
-
-
-
-
-
-
-
-
-
 /*******************************************************************************/
                         /* FUNCIONES CRUD GESTION */
 /*******************************************************************************/
@@ -2306,3 +2296,133 @@ BEGIN
     END IF;
 
 END// DELIMITER;
+
+
+
+
+
+
+/*******************************************************************************/
+                        /* PROCEDIMIENTOS ALMACENADOS CRUD GESTION */
+/*******************************************************************************/
+
+/*CREACION DE GESTION: RECIBIRÉ POR PARTE DEL USUARIO FINAL
+LOS SIGUIENTES PARÁMETROS: SECCION(ACRÓNIMO),ANIO,CORRELATIVO,PERITO_RESPONSABLE,FECHA_INGRESO,TIPO_GESTION*/
+DROP PROCEDURE IF EXISTS PA_CREAR_GESTION;
+DELIMITER //
+CREATE PROCEDURE PA_CREAR_GESTION(IN IDENTIFICADOR_SECCION_NUEVO VARCHAR(10),IN ANIO_NUEVO INT,
+IN CORRELATIVO_NUEVO INT,NOMBRE_PERITO_RESPONSABLE_NUEVO VARCHAR(200),IN FECHA_INGRESO VARCHAR(20),
+NOMBRE_TIPO_GESTION VARCHAR(100),IN NOMBRE_RESPONSABLE_GESTION_NUEVO VARCHAR(200),
+IN OBSERVACIONES_NUEVO VARCHAR(600),IN ULTIMO_USUARIO_MODIFICADOR_NUEVO INT)
+BEGIN
+    /*variables para manipular los datos*/
+    DECLARE ID_SECCIONES INT(03);
+    /*variable para recuperar el id, según su nombre completo*/
+    DECLARE ID_PERITOS INT(06);
+    /*variable para hacer validaciones a la fecha, convertirla a tipo date*/
+    DECLARE DATO_FECHA_INGRESO DATE;
+    /*Variable para extraer el id del tipo de gestion*/
+    DECLARE ID_TIPO_GESTIONES INT(03);
+    /*Variable para recuperar el id_usuario (NIP) del responsable de la gesiton, debe
+    ser un usuario del sistema, en base a sus nombres y apellidos*/
+    DECLARE ID_GESTOR INT(06);
+    /*VARIABLE PARA DETERMINAR SI UNA GESTION YA EXISTEN EN EL SISTEMA*/
+    DECLARE EXISTE_GESTION INT(03);
+    
+    DECLARE EXIT HANDLER FOR SQLWARNING
+        BEGIN
+            ROLLBACK;
+            SIGNAL SQLSTATE '20080' SET MESSAGE_TEXT = "errror durante
+            la ejecución del procedimiento de creación de gestion";
+    END;
+
+    START TRANSACTION;
+        /*1.-Recupero el id de la seccion en base al identificador que me envien como parámetro*/
+        SET ID_SECCIONES=(SELECT FUNCT_OBTENER_ID_SECCION(IDENTIFICADOR_SECCION_NUEVO));
+        /*SI NOS DEVUELVE UN ID DE SECCION DENTRO DE LOS PERMITIDOS*/
+        IF(ID_SECCIONES>0) THEN
+            /*valido que el año de la gestión sea igual al cual va iniciar a funcionar el sistema en adelante,
+            es decir, tendrá que ser mayor o igual a 2020, si me mandan decimales, redondeo el numero
+            al entero SIN APROXIMAR*/
+            IF(SELECT FLOOR(ANIO_NUEVO)>=2020) THEN
+                /*VALIDO QUE EL CORRELATIVO QUE ME INGRESEN, SEA MAYOR A 0 DE LO CONTRARIO NOTIFICARÁ EL ERROR*/
+                IF(FLOOR(CORRELATIVO_NUEVO)>0) THEN
+                    /*VERIFICO SI LA GESTION EXISTE, SI ES ASÍ, LANZARÉ UNA EXCEPCIÓN PARA NOTIFICARLE AL USUARIO FINAL*/
+                    /*SI YA EXISTE LA GESTIÓN DEVUELVE 0 Y SE CANCELA LA INSERCIÓN, SINO EXISTE LA GESTION
+                    DEVUELVE UN 1*/
+                    SET EXISTE_GESTION=(SELECT FUNCT_VERIFICAR_EXISTENCIA_GESTION(ID_SECCIONES,ANIO_NUEVO,CORRELATIVO_NUEVO));
+                    IF(EXISTE_GESTION=1) THEN
+                        /*RETORNAR EL ID DEL PERITO A CARGO DE LA GESTION*/
+                        SET ID_PERITOS=(SELECT FUNCT_EXTRAER_ID_PERITO(NOMBRE_PERITO_RESPONSABLE_NUEVO));
+                        /*SI SE EXTRAJO CORRECTAMENTE EL ID DEL PERITO*/
+                        IF(ID_PERITOS>0) THEN
+                            /*VALIDO LA FECHA DE INGRESO QUE TENGA EL FORMATO CORRECTO,DEBO CONVERTIRLA
+                            A FORMATO DATE, EL FORMATO QUE TIENE QUE VENIR ES DE DIA/MES/AÑO */
+                            SET DATO_FECHA_INGRESO= STR_TO_DATE(REPLACE(FECHA_INGRESO,'/','-') ,'%d-%m-%Y');
+                            /*VERIFICO SI EL AÑO DE LA FECHA ES MAYOR O IGUAL 2020 PARA CONTINUAR CON EL PROCESO*/
+                            IF(SELECT YEAR(DATO_FECHA_INGRESO)>=2020) THEN
+                                /*SE DEBE EXTARE EL ID DEL TIPO DE GESTION PARA HACER EL INSERT*/
+                                SET ID_TIPO_GESTIONES=(SELECT FUNCT_EXTRAER_ID_TP_GESTION(NOMBRE_TIPO_GESTION));
+                                IF(ID_TIPO_GESTIONES>0) THEN
+                                    /*EXTRAER EL ID DEL USUARIO RESPONSABLE DE TRANSCRIBIR DICTAMEN O ENTREGAR OFICIO(SI APLICA)*/
+                                        SET ID_GESTOR=(SELECT FUNCT_EXTRAER_ID_USUARIORESP(NOMBRE_RESPONSABLE_GESTION_NUEVO));
+                                        IF(ID_GESTOR>0) THEN
+                                            /*PROCEDO A HACER LA INSERCION EN LA TABLA GESTION*/
+                                            INSERT INTO GESTION (CORRELATIVO,ANIO,ID_SECCION,ID_PERITO_RESPONSABLE,FECHA_INGRESO,
+                                                                        ID_ESTADO_GESTION,ID_TIPO_GESTION,RESPONSABLE_GESTION,OBSERVACIONES,
+                                                                        ULTIMO_USUARIO_MODIFICADOR)
+                                            VALUES(CORRELATIVO_NUEVO,ANIO_NUEVO,ID_SECCIONES,ID_PERITOS,DATO_FECHA_INGRESO,1,
+                                                    ID_TIPO_GESTIONES,ID_GESTOR,OBSERVACIONES_NUEVO,ULTIMO_USUARIO_MODIFICADOR_NUEVO);
+                                            /*SE CONFIRMA LA TRANSACCION*/
+                                            COMMIT;
+                                        ELSE
+                                            SIGNAL SQLSTATE '20094' SET MESSAGE_TEXT="EL USUARIO RESPONSABLE NO ESTÁ DISPONIBLE, CONTACTE AL DESARROLLADOR";
+                                            ROLLBACK;
+                                        END IF;
+                                ELSE
+                                    SIGNAL SQLSTATE '20088' SET MESSAGE_TEXT="COMUNÍQUESE CON EL DESARROLLADOR,EL TIPO DE GESTION NO EXISTE";
+                                    ROLLBACK;
+                                END IF;
+                            END IF;
+                        ELSE
+                            SIGNAL SQLSTATE '20086' SET MESSAGE_TEXT="ERROR AL EXTRAER EL ID_PERITO, CONTACTE AL DESARROLLADOR";
+                            ROLLBACK;
+                        END IF;
+
+                    ELSE
+                        SIGNAL SQLSTATE '20095' SET MESSAGE_TEXT="LA GESTION YA EXISTE, SINO LA ENCUENTRA EN LA TABLA, CONTACTE
+                        AL ADMINISTRADOR";
+                        ROLLBACK;
+                    END IF;        
+                ELSE
+                    SIGNAL SQLSTATE '20084' SET MESSAGE_TEXT="DEBE INGRESAR ÚNICAMENTE NÚMEROS ENTEROS";
+                    ROLLBACK;
+                END IF;
+            ELSE 
+                /*le notifico al usuario que está ingresando un año no permitido*/
+                SIGNAL SQLSTATE '20083' SET MESSAGE_TEXT="EL AÑO NO PUEDE SER MENOR A 2020, pues a partir de este inició
+                a funcionar el sistema, solo se permiten números en ese rango";
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20082' SET MESSAGE_TEXT="Algo salió mal, contacte al desarrollador";
+            ROLLBACK;
+        END IF;
+END;
+// DELIMITER;
+
+/*
+INSERT INTO GESTION (CORRELATIVO,ANIO,ID_SECCION,ID_PERITO_RESPONSABLE,FECHA_INGRESO,ID_ESTADO_GESTION,ID_TIPO_GESTION,RESPONSABLE_GESTION,OBSERVACIONES,ULTIMO_USUARIO_MODIFICADOR)
+VALUES(450,2020,1,2251,STR_TO_DATE(REPLACE('28/02/2020','/','-') ,'%d-%m-%Y'),1,1,1751,'',1751);
+*/
+
+/*
+CREATE PROCEDURE PA_CREAR_GESTION(IN IDENTIFICADOR_SECCION_NUEVO VARCHAR(10),IN ANIO_NUEVO INT,
+IN CORRELATIVO_NUEVO INT,NOMBRE_PERITO_RESPONSABLE_NUEVO VARCHAR(200),IN FECHA_INGRESO VARCHAR(20),
+NOMBRE_TIPO_GESTION VARCHAR(100),IN NOMBRE_RESPONSABLE_GESTION_NUEVO VARCHAR(200),
+IN OBSERVACIONES_NUEVO VARCHAR(600),IN ULTIMO_USUARIO_MODIFICADOR_NUEVO INT)
+
+
+call PA_CREAR_GESTION('PCEN',2020,451,'ROSITA CANALES','31/03/2020','NECROPSIA','Walter Giovanni Rivera López','tiene toxi',1751);
+*/
+
