@@ -12,7 +12,7 @@ class AjaxSeccion
     enviado a través de javascript
     (id de seccion) */
     public $idSecc;
-    
+
     /*función para tomar el ID del seccion */
     public function ajaxEdicionSeccion()
     {
@@ -33,13 +33,13 @@ class AjaxSeccion
 /*previo a crear el objeto AjaxSeccion,validamos
 que nuestra variable post ID tenga información */
 
-if(isset($_POST["idEditar"]))
+if(isset($_POST["idEditarSeccion"]))
 {
     /*creando un objeto para la edición de seccion */
     $edicion = new AjaxSeccion();
     /*enlazando nuestra variable de clase 
     con el ID del seccion que está en nuestra variable POST */
-    $edicion->idSecc=$_POST["idEditar"];
+    $edicion->idSecc=$_POST["idEditarSeccion"];
     /*Ejecutando el método para enviar el ID de seccion */
     $edicion->ajaxEdicionSeccion();
 }

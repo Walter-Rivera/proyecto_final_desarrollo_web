@@ -13,8 +13,8 @@ $.ajax({
     success:(ans)=>{
         console.log("respuesta", ans);
     }
-});
-*/
+});*/
+
 
 $(".VtSeccions").DataTable({
   "ajax":"Ajax/tablaSeccion.ajax.php",
@@ -54,17 +54,18 @@ al boton de edición en nuestra vista*/
 $(".VtSeccions tbody").on("click","button.botonEditarSeccion",function()
 {
     
-    var idseccion = $(this).attr("idEditarSeccion");
-    //console.log(idseccion);
+    var idEditarSeccion = $(this).attr("idEditarSeccion");
+    //console.log(idEditarSeccion);
     /*creo una variable para utilizar un formulario de js */
     var info= new FormData();
     /*creamos una variable post con el 
     nip del usurio seleccionado de la tabla */
-    info.append("idEditarSeccion",idseccion)
+    info.append("idEditarSeccion",idEditarSeccion)
     /*conexión a la base de datos por medio 
     de ajax para recuperar los datos  del perito 
     que vamos a editar y mostrarlos en el modal,
     se creará un archivo en la en la carpeta ajax con este fin */
+    alert(idEditarSeccion);
     $.ajax({
         url:"Ajax/seccion.ajax.php",
         method: "POST",
@@ -76,8 +77,9 @@ $(".VtSeccions tbody").on("click","button.botonEditarSeccion",function()
         success: function (contenido){
             /*mostar el contenido recuperado de la bd
             en los inputs del modal*/
+            
            document.querySelector('#idEditar').value=contenido["ID"];
-           document.querySelector('#nombreEditar').value=contenido["NOMBRE"];
+           document.querySelector('#nombreEditar').value=contenido["NOMBRES"];
            document.querySelector('#identificadorEditar').value=contenido["IDENTIFICADOR"];
            
         },
@@ -97,20 +99,20 @@ var id_seccion_baja=$(this).attr("idBorrarSeccion");
 
     /*alerta suave para confirmar la baja del perito en el sistema*/
     swal.fire({
-        title:"¿Está seguro de eliminar el perito?",
+        title:"¿Está seguro de eliminar la sección?",
         icon:'warning',
         showCancelButton:true,
         confirmButtonColor:"red",
         cancelButtonColor:"blue",
         cancelButtonText:"Cancelar",
-        confirmButtonText:"Eliminar perito",
+        confirmButtonText:"Eliminar sección",
         /*al terminar el proceso de confirmación */
         }).then((resultado)=>{
             if(resultado.value)
             {
                 /*redirecciono a la pagina perito, envio por get el id del perito a eliminar y
                 el responsable en realizar el proceso */
-                window.location="index.php?ruta=perito&id_seccion_baja="+id_seccion_baja+"&nip_seccion_Responsable="+nip_seccion_Responsable;
+                window.location="index.php?ruta=seccion&id_seccion_baja="+id_seccion_baja+"&nip_seccion_Responsable="+nip_seccion_Responsable;
             }
         })
     });

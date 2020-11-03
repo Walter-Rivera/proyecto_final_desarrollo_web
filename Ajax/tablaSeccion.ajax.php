@@ -16,7 +16,7 @@ class VistaSeccion{
             "data": [';
             for($n=0;$n<count($res);$n++)
             {
-               $botonesAcciones="<div class='btn-group'><button class='btn btn-warning botonEditarSeccion' nipEditarSeccion='".$res[$n]["ID"]."' data-toggle='modal' data-target='#opcEditarSeccion'><i class='fa fa-pencil'></i></button><button class='btn btn-danger botonEliminarSeccion' idBorrarSeccion='".$res[$n]["ID"]."' RESPON='".$_SESSION["NIP"]."'><i class='fa fa-exclamation-circle'></i></button></div>";
+               $botonesAcciones="<div class='btn-group'><button class='btn btn-warning botonEditarSeccion' idEditarSeccion='".$res[$n]["ID"]."' data-toggle='modal' data-target='#opcEditarSeccion'><i class='fa fa-pencil'></i></button><button class='btn btn-danger botonEliminarSeccion' idBorrarSeccion='".$res[$n]["ID"]."' RESPON='".$_SESSION["NIP"]."'><i class='fa fa-exclamation-circle'></i></button></div>";
                 $datosSeccion.= '[
                     "'.$res[$n]["ID"].'",
                     "'.$res[$n]["NOMBRES"].'",

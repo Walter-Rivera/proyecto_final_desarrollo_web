@@ -183,7 +183,7 @@ el formulario para creación de un nuevo seccion-->
               <!--este input group lo que permite es agrupar 
               un ícono con los datos del seccion-->
               <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-fa-list"></i></span>
+                <span class="input-group-addon"><i class="fa fa-list"></i></span>
                 <input class="form-control input-lg" type="text" id="identificadorEditar" name="identificadorEditar" value="" required>
               </div>
             </div>
