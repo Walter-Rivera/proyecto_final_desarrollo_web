@@ -1838,3 +1838,178 @@ BEGIN
 
     END IF;
 END// DELIMITER;
+
+
+
+/*******************************************************************************/
+                        /*PROCEDIMIENTOS ALMACENADOS CRUD TIPO_GESTION */
+/*******************************************************************************/
+
+/*PROCEDIMIENTO ALMACENADO PARA LA CREACIÓN DE UNA TIPO_GESTION*/
+DROP PROCEDURE IF EXISTS PA_CREAR_TIPOGESTION_SISTEMA;
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_CREAR_TIPOGESTION_SISTEMA`(IN NOMBRE_NUEVO VARCHAR(100),IN NOMBRE_CLASE_GESTION VARCHAR(100),IN NIP_ULT_USR_MOD INT,IN NOMBRE_ROL_USR_RESP VARCHAR(100))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20051' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de creación de TIPO_GESTION";
+    END;
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE CREAR AL TIPO_GESTION ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            
+                /*EVALUAMOS QUE EL ROL EXISTE EN LA BD Y EXTRAEMOS EL ID DE ESTE*/
+                SET @NROL_USUARIO_MOD=(SELECT ID_ROL FROM ROL_USUARIO
+                WHERE DESCRIPCION=NOMBRE_ROL_USR_RESP LIMIT 1);
+                /*SI EL ROL DE USUARIO ES ÚNICAMENTE ADMINISTRADOR*/ 
+                IF(@NROL_USUARIO_MOD IN(4)) THEN
+                    /*EXTRAEMOS EL ID DE LA CLASE DE GESTION*/
+                    SET @ID_CLASE=(SELECT FUNCT_EXTRAER_ID_CLASE_GESTION(NOMBRE_CLASE_GESTION));
+                    INSERT TIPO_GESTION(NOMBRE,ID_CLASE_GESTION,ID_ESTADO_TIPO_GESTION,ULTIMO_USUARIO_MODIFICADOR) VALUES(NOMBRE_NUEVO,@ID_CLASE,1,NIP_ULT_USR_MOD);
+                ELSE
+                SIGNAL SQLSTATE '20052' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+                END IF;
+                COMMIT;
+        ELSE
+            SIGNAL SQLSTATE '20053' SET MESSAGE_TEXT='¡Usted no tiene privilegios de Administrador!';
+            ROLLBACK;
+        END IF;
+END;
+
+
+select * from tipo_gestion;
+/*CALL PA_CREAR_TIPOGESTION_SISTEMA ('prueba','OFICIO',1751,'ADMINISTRADOR');*/
+
+
+
+
+
+
+/*procedimiento almacenado para la actualización de datos de una sección*/
+DROP PROCEDURE IF EXISTS PA_ACTUALIZAR_TIPOGESTION_SISTEMA; 
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_ACTUALIZAR_TIPOGESTION_SISTEMA`(IN ID_TIPOGESTION_EDITAR INT, IN NOMBRE_TIPOGESTION_EDITAR VARCHAR(100),
+IN NOMBRE_CLASE_GESTION_EDITAR VARCHAR(100),IN NIP_ULT_USR_MOD INT,IN NOMBRE_ROL_USR_RESP VARCHAR(100))
+BEGIN
+    /*variables para capturar los datos recuperados de la bd del tipo de gestión
+    a través de un cursor*/
+    DECLARE C_ID_TIPOGESTION INT(10);
+    DECLARE C_NOMBRE VARCHAR(200);
+    DECLARE C_CLASE_GESTION VARCHAR(200);
+    DECLARE C_ID_TIPOGESTION_ULT_USR_MODIFICADOR INT(10);
+    /*variable para cerrar el loop*/
+    DECLARE FIN_LOOP INTEGER DEFAULT 0;
+    /*creo un cursor para recuperar los datos del tipo de gestión a actualizar (datos)*/
+    DECLARE CURSOR_SELECCION_TIPOGESTION CURSOR FOR
+    SELECT ID_TIPO_GESTION,NOMBRE,ID_CLASE_GESTION,ULTIMO_USUARIO_MODIFICADOR
+    FROM TIPO_GESTION WHERE ID_TIPO_GESTION=ID_TIPOGESTION_EDITAR;
+
+    /*VARIABLE PARA CONTROLAR EL FINAL DE RECORRIDO DEL CURSOR*/
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET FIN_LOOP=1; 
+    /*excepción para hacer rolback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, SINO
+    EN alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20055' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de actualización de tipo de gestión";
+    END;
+
+    START TRANSACTION;
+        /*OBTENDGO EL ID DE CLASE_GESTION NUEVO A ACTUALIZAR O EL QUE ENVIAN COMO PARAMETRO*/
+            SET @ID_CLASE_GEST=(SELECT FUNCT_EXTRAER_ID_CLASE_GESTION(NOMBRE_CLASE_GESTION_EDITAR));
+
+        /*VERIFICAMOS SI EL USUARIO QUE QUIERE EDITAR LA SECCIÓN ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN, LUEGO VALIDAREMOS EL ROL*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_ULT_USR_MOD));
+        IF(@PRIVILEGIOS=1) THEN
+            /*EVALUAMOS QUE EL ROL EXISTE EN LA BD*/
+            SET @NROL_USUARIO=(SELECT ID_ROL FROM ROL_USUARIO 
+            WHERE DESCRIPCION=NOMBRE_ROL_USR_RESP LIMIT 1);
+            /*SI EL ID DE ROL DE USUARIO SE ENCUENTRA en el de rol DE ADMIN*/ 
+            IF(@NROL_USUARIO IN(4)) THEN
+                /*abrimos el cursor*/
+                OPEN CURSOR_SELECCION_TIPOGESTION;
+                    CICLO: LOOP
+                    FETCH CURSOR_SELECCION_TIPOGESTION INTO C_ID_TIPOGESTION,C_NOMBRE,C_CLASE_GESTION,
+                    C_ID_TIPOGESTION_ULT_USR_MODIFICADOR;
+                        /*comprobamos si llegamos al final de los registros obtenidos del cursor*/
+                        IF FIN_LOOP = 1 THEN
+                            LEAVE CICLO;
+                        END IF;
+                        /*HARÉ VALIDACIÓN DE CAMPO POR CAMPO PARA IDENTIFICAR SI VARIA EL VALOR ANTIGUO
+                        DE CADA UNO CON EL NUEVO ENVIADO POR EL USUARIO DESDE LA VISTA*/
+                        /*SI SE ACTUALIZA EL NOMBRE DE TIPO_GESTION*/
+                        IF(NOMBRE_TIPOGESTION_EDITAR<>C_NOMBRE) THEN
+                            UPDATE TIPO_GESTION SET NOMBRE=NOMBRE_TIPOGESTION_EDITAR WHERE ID_TIPO_GESTION=ID_TIPOGESTION_EDITAR;
+                        END IF;
+                        /*SI LA CLASE_GESTION ES ACTUALIZADA*/
+                        IF(@ID_CLASE_GEST<>C_CLASE_GESTION) THEN
+                            UPDATE TIPO_GESTION SET ID_CLASE_GESTION=@ID_CLASE_GEST WHERE ID_TIPO_GESTION=ID_TIPOGESTION_EDITAR;
+                        END IF;
+                        /*DEBEMOS REGISTAR QUE USUARIO CON PRIVILEGIOS DE ADMIN 
+                        FUE EL ÚLITMO EN EDITAR A OTRO USUARIO*/
+                        IF(C_ID_TIPOGESTION_ULT_USR_MODIFICADOR<>NIP_ULT_USR_MOD) THEN
+                            UPDATE TIPO_GESTION SET ULTIMO_USUARIO_MODIFICADOR=NIP_ULT_USR_MOD
+                            WHERE ID_TIPO_GESTION=ID_TIPOGESTION_EDITAR;
+                        END IF;         
+                    END LOOP CICLO;
+                CLOSE CURSOR_SELECCION_TIPOGESTION;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20056' SET MESSAGE_TEXT = 'ROL INEXISTENTE';
+            ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20057' SET MESSAGE_TEXT = '¡USTED NO TIENE PRIVILEGIOS PARA RELIZAR ESTAS ACCIONES!';
+        END IF;    
+END// DELIMITER;
+
+/*call PA_ACTUALIZAR_TIPOGESTION_SISTEMA(11,'PRUEBA 3','OFICIO',1751,'ADMINISTRADOR');*/
+
+
+
+
+/*PROCEDIMIENTO ALMACENAOD PARA DAR DE BAJA A UNA TIPO_GESTION DEL SISTEMA*/
+DROP PROCEDURE  IF EXISTS PA_BAJA_TIPOGESTION_SISTEMA;
+DELIMITER //
+CREATE DEFINER=`root`@`localhost` PROCEDURE `PA_BAJA_TIPOGESTION_SISTEMA`(IN ID_TIPO_GESTION_FIJA INT,IN NIP_USR_RESP INT)
+BEGIN
+    /*Variable para determinar si el usuario que quiere hacer el UPDATE 
+    existe en la bd, y tiene rol de administrador*/
+    DECLARE VALIDAR_ROL INT;
+    /*Variable para recuperar el id del estado "baja"*/
+    DECLARE ID_ESTADO_BAJA INT;
+    /*excepción para hacer rolLback si surge una excepción de sql durante la 
+    ejecución del procedimiento almacenado (no en algún query como tal, sino
+    en alguna fase de compilación del procedimiento almacenado)*/
+    DECLARE EXIT HANDLER FOR SQLWARNING
+    BEGIN
+        ROLLBACK;
+         SIGNAL SQLSTATE '20059' SET MESSAGE_TEXT = "errror durante
+         la ejecución del procedimiento de BAJA DEL TIPO_GESTION";
+    END;
+
+    START TRANSACTION;
+        /*VERIFICAMOS SI EL TIPO_GESTION QUE QUIERE CREAR OTRO ESTÁ ACTIVO Y TENGA PRIVILEGIOS DE ADMIN*/
+        SET @PRIVILEGIOS=(SELECT FUNCT_EXISTE_USR_ADMIN(NIP_USR_RESP));
+        IF(@PRIVILEGIOS=1) THEN
+            /*RECUPERO EL ID DEL ESTADO "BAJA" CON UNA FUNCIÓN*/
+            SET ID_ESTADO_BAJA=(SELECT FUNCT_DEVOLVER_ESTADO_TIPOGESTION_BAJA());
+            IF(!ISNULL(ID_ESTADO_BAJA)) THEN
+                UPDATE TIPO_GESTION SET ID_ESTADO_TIPO_GESTION=ID_ESTADO_BAJA WHERE ID_TIPO_GESTION=ID_TIPO_GESTION_FIJA;
+                UPDATE TIPO_GESTION SET ULTIMO_USUARIO_MODIFICADOR=NIP_USR_RESP WHERE ID_TIPO_GESTION=ID_TIPO_GESTION_FIJA;
+                COMMIT;
+            ELSE
+                SIGNAL SQLSTATE '20060' SET MESSAGE_TEXT = "OPCION INEXISTENTE AL QUERER ELIMINAR TIPO_GESTION, COMÚNIQUESE CON EL DESARROLLADOR";
+                ROLLBACK;
+            END IF;
+        ELSE
+            SIGNAL SQLSTATE '20061' SET MESSAGE_TEXT="¡Usted no tiene privilegios para realizar esta acción!";
+        END IF;
+    END// DELIMITER;
+
+/*CALL PA_BAJA_TIPOGESTION_SISTEMA(11,1751);*/
+
