@@ -1,6 +1,6 @@
 <?php
 /*validando acceso a las opciones si no tiene
-permisos el seccion, lo redirecciona a la página de inicio*/
+permisos el TipoGestion, lo redirecciona a la página de inicio*/
 /*a la administración de usuarios, solo el admin tendrá acceso*/
   if($_SESSION["DESCRIPCION"]!="ADMINISTRADOR")
   {
@@ -33,11 +33,11 @@ permisos el seccion, lo redirecciona a la página de inicio*/
       <!-- Default box -->
       <div class="box">
         <div class="box-header with-border">
-          <!--Colocando opción para agregar seccion al Sistema, básicamente
+          <!--Colocando opción para agregar TipoGestion al Sistema, básicamente
               al darle click, nos creará una ventana modal para un form y allí colocar los elementos
-            para crear una nueva seccion-->
+            para crear una nueva TipoGestion-->
           <button color="red" class="btn btn-primary" data-toggle="modal" data-target="#opcAgregarTipoGestion">
-            Crear Seccion
+            Crear TipoGestion
           </button>
 
         </div>
@@ -46,8 +46,8 @@ permisos el seccion, lo redirecciona a la página de inicio*/
         <div class="box-body">
             <!--las clases para esta tabla se están tomando de bootstrap; a excepción 
             de la clase Tabla, la cual usaremos en js para activar el plugin datatable en esta
-            seccion-->
-          <table class="table table-bordered table-striped table-dark table-responsive-xl VtSeccions" style="width:100%">
+            TipoGestion-->
+          <table class="table table-bordered table-striped table-dark table-responsive-xl VtTipoGestion" style="width:100%">
 
            
             <!--cabecera de la tabla-->
@@ -75,7 +75,7 @@ permisos el seccion, lo redirecciona a la página de inicio*/
 
 
   <!--creando una ventana modal para llenar
-el formulario para creación de un nuevo seccion-->
+el formulario para creación de un nuevo TipoGestion-->
 
 <!-- Modal tomado de boostrap 4.5 -->
 <div class="modal fade" id="opcAgregarTipoGestion" tabindex="-1" 
@@ -97,10 +97,10 @@ el formulario para creación de un nuevo seccion-->
           
           
             <!--creando formulario (clases de bootstrap específicas para realizar formularios)
-            para recolectar el o los nombres del nuevo seccion-->
+            para recolectar el o los nombres del nuevo TipoGestion-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos que ingrese el seccion-->
+              un ícono con los datos que ingrese el TipoGestion-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-plus"></i></span>
                 <input class="form-control input-lg" type="text" name="nombreNuevo" placeholder="ingrese Nombre de la gestión" required>
@@ -108,20 +108,20 @@ el formulario para creación de un nuevo seccion-->
             </div>
 
 
-            <!--para recolectar el o los identificadors del nuevo seccion-->
+            <!--para recolectar el o los identificadors del nuevo TipoGestion-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos que ingrese el seccion-->
+              un ícono con los datos que ingrese el TipoGestion-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-plus"></i></span>
-                <select class="form-control input-lg" name="seccionE">
-                <option value="" id="optEditarCliente">Seleccione un rol...</option>
+                <select class="form-control input-lg" name="TipoGestionC">
+                <option value="">Seleccione clase de gestion...</option>
                 <?php
                     $info = ContrlTipoGestion::controlerMostarClase();
 
                     foreach($info as $key => $value)
                     {
-                      echo'<option value='.$value["DESCRIPCION"].'>'.$value["DESCRIPCION"].'</option>';
+                      echo'<option value='.$value["NOMBRE"].'>'.$value["NOMBRE"].'</option>';
                     }
 
                   ?>
@@ -136,17 +136,17 @@ el formulario para creación de un nuevo seccion-->
           <button type="submit" class="btn btn-primary">Crear</button>
         </div>
         <?php
-          /*código php para guardar la creación del seccion*/
-            $almacenarSeccion=new ContrlTipoGestion();
+          /*código php para guardar la creación del TipoGestion*/
+            $almacenarTipoGestion=new ContrlTipoGestion();
             /*método para guardar los usuarios en el sistema*/
-            $almacenarSeccion->controlerCrearTipoGestion();
+            $almacenarTipoGestion->controlerCrearTipoGestion();
         ?>
       </form>
     </div>
   </div>
 </div>
 
- <!--creando una ventana modal para actualizar un seccion-->
+ <!--creando una ventana modal para actualizar un TipoGestion-->
 
 <!-- Modal tomado de boostrap 4.5 -->
 <div class="modal fade" id="opcEditarTipoGestion" tabindex="-1" 
@@ -156,7 +156,7 @@ el formulario para creación de un nuevo seccion-->
       <!--creando el formulario para capturar los datos de la creación en el modal-->
       <form role="form" method="POST">
         <div class="modal-header"  text-align="center" style="background:#001F3F; color:white">
-          <h5 class="modal-title" id="exampleModalLabel" text-align="center">Actualizar datos de Seccion</h5>
+          <h5 class="modal-title" id="exampleModalLabel" text-align="center">Actualizar datos de TipoGestion</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
@@ -164,12 +164,12 @@ el formulario para creación de un nuevo seccion-->
         <div class="modal-body">
           <!--creando caja para el contenidod del body-->
           <div class="box-body">
-            <!--div para ver el NIP del seccion-->
+            <!--div para ver el NIP del TipoGestion-->
             <div class="form-group">
 
 
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos del seccion-->
+              un ícono con los datos del TipoGestion-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-list"></i></span>
                 <input class="form-control input-lg" type="text" id="idEditar" name="idEditar" value="" required readonly>
@@ -179,10 +179,10 @@ el formulario para creación de un nuevo seccion-->
           
           
             <!--creando formulario (clases de bootstrap específicas para realizar formularios)
-            para recolectar el o los nombres del nuevo seccion-->
+            para recolectar el o los nombres del nuevo TipoGestion-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono del seccion-->
+              un ícono del TipoGestion-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-list"></i></span>
                 <input class="form-control input-lg" type="text" id="nombreEditar" name="nombreEditar" value="" required>
@@ -190,20 +190,20 @@ el formulario para creación de un nuevo seccion-->
             </div>
 
 
-            <!--para recolectar el o los identificador del nuevo seccion-->
+            <!--para recolectar el o los identificador del nuevo TipoGestion-->
             <div class="form-group">
               <!--este input group lo que permite es agrupar 
-              un ícono con los datos del seccion-->
+              un ícono con los datos del TipoGestion-->
               <div class="input-group">
                 <span class="input-group-addon"><i class="fa fa-list"></i></span>
-                <select class="form-control input-lg" name="seccionE">
-                <option value="" id="optEditarCliente">Seleccione un rol...</option>
+                <select class="form-control input-lg" name="TipoGestionE">
+                <option value="" id="optEditarTipoGestion" name="optEditarTipoGestion">seleccione clase gestion...</option>
                 <?php
                     $info = ContrlTipoGestion::controlerMostarClase();
 
                     foreach($info as $key => $value)
                     {
-                      echo'<option value='.$value["DESCRIPCION"].'>'.$value["DESCRIPCION"].'</option>';
+                      echo'<option value='.$value["NOMBRE"].'>'.$value["NOMBRE"].'</option>';
                     }
 
                   ?>
@@ -218,10 +218,10 @@ el formulario para creación de un nuevo seccion-->
           <button type="submit" class="btn btn-primary">Actualizar</button>
         </div>
         <?php
-          /*creamos las instancias de la clase controler de seccion 
+          /*creamos las instancias de la clase controler de TipoGestion 
           para salvar las modificaciones del individuo */
-            $edicionSeccion=new ContrlTipoGestion();  
-            $edicionSeccion->controlerEditarTipoGestion(); 
+            $edicionTipoGestion=new ContrlTipoGestion();  
+            $edicionTipoGestion->controlerEditarTipoGestion(); 
         ?>
       </form>
     </div>
@@ -231,7 +231,7 @@ el formulario para creación de un nuevo seccion-->
  
 
  <?php
- /*llamando al controlador para eliminar = (dar de baja en el  sistema al seccion)*/
+ /*llamando al controlador para eliminar = (dar de baja en el  sistema al TipoGestion)*/
  $borrarUsuario= new ContrlTipoGestion();
 /*método que realiza la acción*/
  $borrarUsuario->controlerBorrarTipoGestion();
