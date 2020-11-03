@@ -1602,3 +1602,21 @@ BEGIN
         END IF;
     END// DELIMITER;
 
+/*******************************************************************************/
+                        /*TRIGGERS CRUD SECCION */
+/*******************************************************************************/
+
+/*TRIGGER PARA REGISTRAR LA CREACIÓN DE UN SECCION (INSERCIÓN DE SECCION), SOLO 
+SE ALMACENA EL "MOVIMIENTO" YA EN LA ACTUALIZACIÓN DE DATOS, SERÁ OTRO TRIGGER
+ QUE SE DISPARARÁ*/
+DROP TRIGGER IF EXISTS AI_SECCION_SISTEMA;
+DELIMITER// 
+/*Trigger para registar la creación de una nueva sección*/
+CREATE DEFINER=`root`@`localhost` TRIGGER AI_SECCION_SISTEMA
+    AFTER INSERT ON SECCION
+    FOR EACH ROW
+    BEGIN
+      INSERT INTO BITACORA_SECCION(ID_SEC_AFECTADO,ID_TIPO_MOVIMIENTO,
+      FECHA_MOVIMIENTO,ID_USR_RESPONSABLE)
+      VALUES(new.ID_SECCION,4,NOW(),new.ULTIMO_USUARIO_MODIFICADOR);
+  	END// DELIMITER;

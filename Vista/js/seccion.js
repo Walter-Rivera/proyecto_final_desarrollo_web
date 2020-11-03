@@ -65,7 +65,6 @@ $(".VtSeccions tbody").on("click","button.botonEditarSeccion",function()
     de ajax para recuperar los datos  del perito 
     que vamos a editar y mostrarlos en el modal,
     se creará un archivo en la en la carpeta ajax con este fin */
-    alert(idEditarSeccion);
     $.ajax({
         url:"Ajax/seccion.ajax.php",
         method: "POST",
